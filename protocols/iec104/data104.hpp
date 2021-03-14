@@ -1,7 +1,7 @@
 #ifndef IEC104_DATA104_HPP_
 #define IEC104_DATA104_HPP_
 
-#include "data.hpp"
+#include "core/data.hpp"
 
 namespace IEC104
 {

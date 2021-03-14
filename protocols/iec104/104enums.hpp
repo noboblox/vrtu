@@ -1,7 +1,7 @@
 #ifndef IEC104_104ENUMS_HPP_
 #define IEC104_104ENUMS_HPP_
 
-#include "namedenum.hpp"
+#include "core/namedenum.hpp"
 
 namespace IEC104
 {

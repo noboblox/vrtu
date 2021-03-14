@@ -1,4 +1,4 @@
-#include "infoobjects.hpp"
+#include "protocols/iec104/infoobjects.hpp"
 
 #include <algorithm>
 #include <stdexcept>

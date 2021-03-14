@@ -1,9 +1,9 @@
 #ifndef IEC104_ASDU_HPP_
 #define IEC104_ASDU_HPP_
 
-#include "data.hpp"
-#include "data104.hpp"
-#include "infoobjects.hpp"
+#include "core/data.hpp"
+#include "protocols/iec104/data104.hpp"
+#include "protocols/iec104/infoobjects.hpp"
 
 class ByteStream;
 

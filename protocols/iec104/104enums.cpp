@@ -1,4 +1,4 @@
-#include "104enums.hpp"
+#include "protocols/iec104/104enums.hpp"
 
 IEC104::DoublePointEnum::DefinitionContainer IEC104::DoublePointEnum::msDefinition = {
         IEC104::DoublePointEnum::Definition(IEC104::DoublePoint::INTERMEDIATE, "intermediate"),

@@ -1,6 +1,6 @@
-#include "infoobjects.hpp"
+#include "protocols/iec104/infoobjects.hpp"
 
-#include "104enums.hpp"
+#include "protocols/iec104/104enums.hpp"
 
 namespace IEC104
 {

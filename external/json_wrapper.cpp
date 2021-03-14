@@ -1,16 +1,16 @@
-#include "json.hpp"
+#include "external/json_wrapper.hpp"
 
 #include <ostream>
 #include <stdexcept>
 
 #define RAPIDJSON_HAS_STDSTRING 1
-#include "external/rapidjson/rapidjson.h"
+#include "external/private/rapidjson/rapidjson.h"
 
-#include "external/rapidjson/allocators.h"
-#include "external/rapidjson/document.h"
-#include "external/rapidjson/ostreamwrapper.h"
-#include "external/rapidjson/prettywriter.h"
-#include "external/rapidjson/writer.h"
+#include "external/private/rapidjson/allocators.h"
+#include "external/private/rapidjson/document.h"
+#include "external/private/rapidjson/ostreamwrapper.h"
+#include "external/private/rapidjson/prettywriter.h"
+#include "external/private/rapidjson/writer.h"
 
 
 namespace JSON

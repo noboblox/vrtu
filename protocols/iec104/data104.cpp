@@ -1,4 +1,4 @@
-#include "data104.hpp"
+#include "protocols/iec104/data104.hpp"
 
 namespace IEC104
 {

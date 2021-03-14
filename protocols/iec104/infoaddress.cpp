@@ -1,7 +1,7 @@
-#include "infoaddress.hpp"
+#include "protocols/iec104/infoaddress.hpp"
 
 #include <stdexcept>
-#include "bytestream.hpp"
+#include "core/bytestream.hpp"
 
 namespace IEC104
 {

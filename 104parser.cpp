@@ -4,13 +4,13 @@
 #include <stdexcept>
 #include <vector>
 
-#include "asdu.hpp"
-#include "bytestream.hpp"
-#include "data.hpp"
-#include "infoaddress.hpp"
-#include "infoobjects.hpp"
-#include "json.hpp"
-#include "namedenum.hpp"
+#include "core/bytestream.hpp"
+#include "core/data.hpp"
+#include "core/namedenum.hpp"
+#include "external/json_wrapper.hpp"
+#include "protocols/iec104/asdu.hpp"
+#include "protocols/iec104/infoaddress.hpp"
+#include "protocols/iec104/infoobjects.hpp"
 
 int main()
 {

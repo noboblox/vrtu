@@ -5,9 +5,9 @@
 #include <map>
 #include <memory>
 
-#include "104enums.hpp"
-#include "data.hpp"
-#include "data104.hpp"
+#include "core/data.hpp"
+#include "protocols/iec104/104enums.hpp"
+#include "protocols/iec104/data104.hpp"
 
 namespace IEC104
 {

@@ -1,7 +1,7 @@
 #ifndef IEC104_REASON_HPP_
 #define IEC104_REASON_HPP_
 
-#include "104enums.hpp"
+#include "protocols/iec104/104enums.hpp"
 
 namespace IEC104
 {
