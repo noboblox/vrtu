@@ -13,8 +13,6 @@
 
 class BaseData
 {
-  // TODO: Separate this class tree from direct references to extrernal JSON library?
-
 public:
     using ChildContainer = std::vector<BaseData*>;
 
