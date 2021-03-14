@@ -62,19 +62,13 @@ namespace IEC104
 
     void BaseInfoObject::WriteJson(JSON::ValueHandle& arHandle) const
     {
-        JSON::Value& r_current = arHandle.GetValue();
-        r_current.SetObject();
-
         for (const auto& rp_child : mChilds)
         {
             if (!IsRoot() && (rp_child == &mType))
                 continue; // Print type for standalone IOs only
 
-            r_current.AddMember(JSON::StringRef(rp_child->GetName()), JSON::Value(), arHandle.GetAllocator());
-
-            auto child_iter = r_current.FindMember(rp_child->GetName());
-            JSON::ValueHandle handle(child_iter->value, arHandle.GetAllocator());
-            rp_child->WriteJson(handle);
+            auto child_member = arHandle.AddMember(rp_child->GetName());
+            rp_child->WriteJson(child_member);
         }
     }
 

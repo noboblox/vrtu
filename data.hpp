@@ -6,10 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include "external/json_wrapper.hpp"
-
 #include "bytestream.hpp"
 #include "infoaddress.hpp"
+#include "json.hpp"
 #include "reason.hpp"
 
 class BaseData
@@ -96,16 +95,10 @@ public:
 
     void WriteJson(JSON::ValueHandle& arHandle) const override
     {
-        auto& r_current = arHandle.GetValue();
-        r_current.SetArray();
-
         for (const auto& rp_child : mChilds)
         {
-            r_current.PushBack(JSON::Value(), arHandle.GetAllocator());
-
-            auto p_child = (r_current.End() - 1); // Reverse begin
-            JSON::ValueHandle handle(*p_child, arHandle.GetAllocator());
-            rp_child->WriteJson(handle);
+            auto added = arHandle.PushBack();
+            rp_child->WriteJson(added);
         }
     }
 
@@ -143,8 +136,7 @@ public:
     {
         if (IsValid())
         {
-            auto& r_value = arHandle.GetValue();
-            r_value.Set(mData);
+            arHandle.Set(mData);
         }
     }
 
@@ -217,14 +209,11 @@ public:
     {
         if (IsValid())
         {
-            auto& r_value = arHandle.GetValue();
+            auto label = arHandle.AddMember("label");
+            label.Set(mData.GetLabel());
 
-            r_value.SetObject();
-            r_value.AddMember(JSON::StringRef("label"), 
-                              JSON::Value(JSON::StringRef(mData.GetLabel())), 
-                              arHandle.GetAllocator()); // Data is assumed to be unchanged until the document is serialized!
-            r_value.AddMember(JSON::StringRef("value"), JSON::Value(static_cast<intmax_t>(mData.GetValue())), // Convert into the biggest possible integer type
-                              arHandle.GetAllocator());
+            auto value = arHandle.AddMember("value");
+            value.Set(static_cast<intmax_t>(mData.GetValue()));
         }
     }
 

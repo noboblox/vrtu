@@ -9,6 +9,7 @@
 #include "data.hpp"
 #include "infoaddress.hpp"
 #include "infoobjects.hpp"
+#include "json.hpp"
 #include "namedenum.hpp"
 
 int main()

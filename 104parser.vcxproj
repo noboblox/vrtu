@@ -143,11 +143,11 @@
     <ClCompile Include="104enums.cpp" />
     <ClCompile Include="104parser.cpp" />
     <ClCompile Include="asdu.cpp" />
-    <ClCompile Include="asdu_decode.cpp" />
     <ClCompile Include="data.cpp" />
     <ClCompile Include="data104.cpp" />
     <ClCompile Include="infoaddress.cpp" />
     <ClCompile Include="infoobjects.cpp" />
+    <ClCompile Include="json.cpp" />
     <ClCompile Include="register_iec104.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -156,9 +156,9 @@
     <ClInclude Include="bytestream.hpp" />
     <ClInclude Include="data.hpp" />
     <ClInclude Include="data104.hpp" />
-    <ClInclude Include="external\json_wrapper.hpp" />
     <ClInclude Include="infoaddress.hpp" />
     <ClInclude Include="infoobjects.hpp" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="namedenum.hpp" />
     <ClInclude Include="reason.hpp" />
   </ItemGroup>

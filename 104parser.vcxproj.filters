@@ -33,13 +33,13 @@
     <ClCompile Include="104enums.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="asdu_decode.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="data.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="data104.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="json.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,7 +71,7 @@
     <ClInclude Include="data104.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="external\json_wrapper.hpp">
+    <ClInclude Include="json.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

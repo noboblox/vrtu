@@ -26,16 +26,11 @@ namespace IEC104
     {
         if (IsValid())
         {
-            auto& r_value = arHandle.GetValue();
-            r_value.SetObject();
+            auto address = arHandle.AddMember("value");
+            address.Set(this->operator*().GetInt());
 
-            r_value.AddMember(JSON::StringRef("value"), 
-                              JSON::Value(this->operator*().GetInt()),
-                              arHandle.GetAllocator());
-
-            r_value.AddMember(JSON::StringRef("size"),
-                JSON::Value(this->operator*().GetSize()),
-                arHandle.GetAllocator());
+            auto size = arHandle.AddMember("size");
+            size.Set(this->operator*().GetSize());
         }
     }
 
@@ -63,24 +58,17 @@ namespace IEC104
     {
         if (IsValid())
         {
-            auto& r_value = arHandle.GetValue();
-            r_value.SetObject();
+            auto quality_iv = arHandle.AddMember("invalid");
+            quality_iv.Set(mData.IsInvalid());
 
-            r_value.AddMember(JSON::StringRef("invalid"),
-                JSON::Value(mData.IsInvalid()),
-                arHandle.GetAllocator());
+            auto quality_nt = arHandle.AddMember("not topical");
+            quality_nt.Set(mData.IsNotTopical());
 
-            r_value.AddMember(JSON::StringRef("not topical"),
-                JSON::Value(mData.IsNotTopical()),
-                arHandle.GetAllocator());
+            auto quality_sb = arHandle.AddMember("substituted");
+            quality_sb.Set(mData.IsSubstituted());
 
-            r_value.AddMember(JSON::StringRef("substituted"),
-                JSON::Value(mData.IsSubstituted()),
-                arHandle.GetAllocator());
-
-            r_value.AddMember(JSON::StringRef("blocked"),
-                JSON::Value(mData.IsBlocked()),
-                arHandle.GetAllocator());
+            auto quality_bl = arHandle.AddMember("blocked");
+            quality_bl.Set(mData.IsBlocked());
         }
     }
 }
