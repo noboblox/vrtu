@@ -45,6 +45,9 @@
     <ClInclude Include="protocols\iec104\104enums.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="protocols\iec104\quality.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">

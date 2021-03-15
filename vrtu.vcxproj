@@ -150,6 +150,7 @@
     <ClInclude Include="protocols\iec104\data104.hpp" />
     <ClInclude Include="protocols\iec104\infoaddress.hpp" />
     <ClInclude Include="protocols\iec104\infoobjects.hpp" />
+    <ClInclude Include="protocols\iec104\quality.hpp" />
     <ClInclude Include="protocols\iec104\reason.hpp" />
   </ItemGroup>
   <ItemGroup>

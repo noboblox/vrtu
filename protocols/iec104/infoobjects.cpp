@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include "protocols/iec104/quality.hpp"
+
 namespace IEC104
 {
     InfoObjectFactory::CreateFunctions InfoObjectFactory::msFunctions;
