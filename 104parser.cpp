@@ -11,7 +11,7 @@
 #include "protocols/iec104/asdu.hpp"
 #include "protocols/iec104/infoaddress.hpp"
 #include "protocols/iec104/infoobjects.hpp"
-
+/*
 int main()
 {
     static constexpr uint8_t DUMMY_MSG[] = {
@@ -94,3 +94,4 @@ int main()
 
     return 0;
 }
+*/

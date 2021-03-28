@@ -48,6 +48,12 @@
     <ClInclude Include="protocols\iec104\quality.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="rtutool.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="protocols\iec104\apdu.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">
@@ -75,6 +81,12 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="104parser.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="rtutool.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="protocols\iec104\apdu.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

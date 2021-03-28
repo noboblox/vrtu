@@ -88,11 +88,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Rene\source\repos\vrtu\vrtu;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Rene\source\repos\vrtu\vrtu;C:\Users\Rene\Desktop\boost_1_75_0\boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\Rene\Desktop\boost_1_75_0\bin.v2\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,23 +148,27 @@
     <ClInclude Include="core\namedenum.hpp" />
     <ClInclude Include="external\json_wrapper.hpp" />
     <ClInclude Include="protocols\iec104\104enums.hpp" />
+    <ClInclude Include="protocols\iec104\apdu.hpp" />
     <ClInclude Include="protocols\iec104\asdu.hpp" />
     <ClInclude Include="protocols\iec104\data104.hpp" />
     <ClInclude Include="protocols\iec104\infoaddress.hpp" />
     <ClInclude Include="protocols\iec104\infoobjects.hpp" />
     <ClInclude Include="protocols\iec104\quality.hpp" />
     <ClInclude Include="protocols\iec104\reason.hpp" />
+    <ClInclude Include="rtutool.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="104parser.cpp" />
     <ClCompile Include="core\data.cpp" />
     <ClCompile Include="external\json_wrapper.cpp" />
     <ClCompile Include="protocols\iec104\104enums.cpp" />
+    <ClCompile Include="protocols\iec104\apdu.cpp" />
     <ClCompile Include="protocols\iec104\asdu.cpp" />
     <ClCompile Include="protocols\iec104\data104.cpp" />
     <ClCompile Include="protocols\iec104\infoaddress.cpp" />
     <ClCompile Include="protocols\iec104\infoobjects.cpp" />
     <ClCompile Include="protocols\iec104\register_iec104.cpp" />
+    <ClCompile Include="rtutool.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
