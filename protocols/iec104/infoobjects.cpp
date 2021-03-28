@@ -159,7 +159,7 @@ namespace IEC104
         }
 
         const uint8_t encoded = arInput.ReadByte();
-        RequireNull(encoded & 0x16);
+        RequireNull(encoded & 0x0E);
         mQuality = Quality(encoded);
     }
 
@@ -201,7 +201,7 @@ namespace IEC104
         }
 
         const uint8_t encoded = arInput.ReadByte();
-        RequireNull(encoded & 0x16);
+        RequireNull(encoded & 0x0E);
         mQuality = Quality(encoded);
     }
 
