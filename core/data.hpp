@@ -24,6 +24,8 @@ public:
 
     /// Check if this element has a parent (== is not the root element)
     bool IsRoot() const noexcept;
+    const BaseData* GetParent() const noexcept;
+    BaseData* GetParent() noexcept;
 
     /// Stream this object as root object into an ostream
     std::ostream& Serialize(std::ostream& arOutput) const;
@@ -32,7 +34,16 @@ public:
     virtual void WriteJson(JSON::ValueHandle& arValue) const = 0;
 
     const std::string& GetName() const noexcept { return mName; }
+    
+    /// Get the full path to this data instance within the tree
+    std::string GetPath(char aSeparator = '/') const;
+
     virtual void Clear() noexcept { SetValid(false); }
+
+    /// Prepend path own subpath oriniating from a specific child node.
+    /// This function should be called recursively, while navigating upwards.
+    /// It can be overriden for special casing (e.g. array with [] indexing)
+    virtual void PrependPathForChild(const BaseData& arChild, char aSeparator, std::string& arModifiedPath) const;
 
 protected:
     explicit BaseData(const std::string& arName) noexcept;
@@ -40,7 +51,6 @@ protected:
 
     void AddChild(BaseData& arChild);
     void SetValid(bool aState) noexcept { mValid = aState; }
-
 
 protected:
     BaseData* mpParent;
@@ -98,6 +108,25 @@ public:
             auto added = arHandle.PushBack();
             rp_child->WriteJson(added);
         }
+    }
+
+    void PrependPathForChild(const BaseData& arChild, char aSeparator, std::string& arModifiedPath) const override
+    {
+        auto it_child = std::find(mChilds.cbegin(), mChilds.cend(), &arChild);
+
+        if (it_child == mChilds.cend())
+            throw std::invalid_argument("Data element is not a child of this instance.");
+
+        std::string subpath(GetName());
+        subpath += '[';
+        subpath += std::to_string(std::distance(mChilds.cbegin(), it_child));
+        subpath += ']';
+
+        arModifiedPath.insert(0, 1, aSeparator);
+        arModifiedPath.insert(0, subpath);
+
+        if (!IsRoot())
+            GetParent()->PrependPathForChild(*this, aSeparator, arModifiedPath);
     }
 
 private:
