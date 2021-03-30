@@ -8,6 +8,7 @@
 #include "core/data.hpp"
 #include "protocols/iec104/104enums.hpp"
 #include "protocols/iec104/data104.hpp"
+#include "protocols/iec104/infoaddress.hpp"
 
 namespace IEC104
 {

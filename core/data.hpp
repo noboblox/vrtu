@@ -8,8 +8,6 @@
 
 #include "core/bytestream.hpp"
 #include "external/json_wrapper.hpp"
-#include "protocols/iec104/infoaddress.hpp"
-#include "protocols/iec104/reason.hpp"
 
 class BaseData
 {

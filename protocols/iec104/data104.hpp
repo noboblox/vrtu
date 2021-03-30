@@ -2,7 +2,9 @@
 #define IEC104_DATA104_HPP_
 
 #include "core/data.hpp"
+#include "protocols/iec104/infoaddress.hpp"
 #include "protocols/iec104/quality.hpp"
+#include "protocols/iec104/reason.hpp"
 
 namespace IEC104
 {
