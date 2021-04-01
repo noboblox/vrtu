@@ -155,4 +155,23 @@ namespace IEC104
             arBuffer.WriteByte(encoded);
         }
     }
+
+    int Asdu::GetExpectedSize() const
+    {
+        int result = 3 + mConfig.GetReasonSize() + mConfig.GetCASize();
+        const int type = mType.IsValid() ? static_cast<int> ((*mType).GetValue()) : 0;
+
+        if (mSize.IsValid() && type && 
+            InfoObjectFactory::HasType(type))
+        {
+            result += InfoObjectFactory::GetSize(type) * (*mSize);
+
+            if (mIsSequence.IsValid() && *mIsSequence)
+                result += mConfig.GetIOASize();
+            else
+                result += mConfig.GetIOASize() * (*mSize);
+        }
+
+        return result;
+    }
 }

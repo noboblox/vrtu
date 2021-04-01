@@ -21,7 +21,8 @@ namespace IEC104
         static SharedInfoObject Create(uint8_t aType);
         static void RegisterInfoObject(int aType, int aPriority, int aInfoElementSize, 
                                        const std::function<SharedInfoObject(void)>& arCreationFunction);
-        static int GetInfoObjectSize(uint8_t aType) noexcept;
+        static int GetSize(uint8_t aType) noexcept;
+        static bool HasType(uint8_t aType) noexcept;
 
     private:
         class LookupKey

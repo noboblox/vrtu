@@ -53,6 +53,7 @@ namespace IEC104
     private:
         void ReadHeader(ByteStream& arBuffer);
         void WriteHeader(ByteStream& arBuffer) const;
+        int GetExpectedSize() const;
 
     private:
         AsduConfig mConfig;

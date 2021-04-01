@@ -39,7 +39,7 @@ namespace IEC104
         }
     }
 
-    int InfoObjectFactory::GetInfoObjectSize(uint8_t aType) noexcept
+    int InfoObjectFactory::GetSize(uint8_t aType) noexcept
     {
         auto it_found = msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
 
@@ -47,6 +47,11 @@ namespace IEC104
             return 0;
         else
             return msSizes[it_found->second];
+    }
+
+    bool InfoObjectFactory::HasType(uint8_t aType) noexcept
+    {
+        return msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY)) != msRegistered.cend();
     }
 
     BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId)
