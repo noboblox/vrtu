@@ -7,30 +7,46 @@
 
 namespace IEC104
 {
-    InfoObjectFactory::CreateFunctions InfoObjectFactory::msFunctions;
+    // Static initialization
+    std::map<InfoObjectFactory::LookupKey, int>        InfoObjectFactory::msRegistered;
+    std::vector<std::function<SharedInfoObject(void)>> InfoObjectFactory::msFunctions;
+    std::vector<int>                                   InfoObjectFactory::msSizes;
 
     SharedInfoObject
     InfoObjectFactory::Create(uint8_t aType)
     {
-        auto it_found = msFunctions.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
+        auto it_found = msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
 
-        if (it_found == msFunctions.end())
+        if (it_found == msRegistered.end())
             throw std::out_of_range("Creation function not found");
 
-        auto& CreateFunction = it_found->second;
+        auto& CreateFunction = msFunctions[it_found->second];
         return CreateFunction();
     }
 
     void
-    InfoObjectFactory::RegisterInfoObject(int aType, int aPriority, const std::function<SharedInfoObject(void)>& arCreateFunction)
+    InfoObjectFactory::RegisterInfoObject(int aType, int aPriority, int aInfoElementSize,
+                                          const std::function<SharedInfoObject(void)>& arCreateFunction)
     {
-        auto it_found = msFunctions.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
+        auto it_found = msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
 
-        if (it_found == msFunctions.end() || 
+        if (it_found == msRegistered.end() || 
             it_found->first.GetPriority() < aPriority)
         {
-            msFunctions[LookupKey(aType, aPriority)] = arCreateFunction;
+            msFunctions.push_back(arCreateFunction);
+            msSizes.push_back(aInfoElementSize);
+            msRegistered[LookupKey(aType, aPriority)] = msFunctions.size() - 1;
         }
+    }
+
+    int InfoObjectFactory::GetInfoObjectSize(uint8_t aType) noexcept
+    {
+        auto it_found = msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY));
+
+        if (it_found == msRegistered.cend())
+            return 0;
+        else
+            return msSizes[it_found->second];
     }
 
     BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId)

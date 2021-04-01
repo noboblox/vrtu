@@ -19,7 +19,9 @@ namespace IEC104
     {
     public:
         static SharedInfoObject Create(uint8_t aType);
-        static void RegisterInfoObject(int aType, int aPriority, const std::function<SharedInfoObject(void)>& arCreationFunction);
+        static void RegisterInfoObject(int aType, int aPriority, int aInfoElementSize, 
+                                       const std::function<SharedInfoObject(void)>& arCreationFunction);
+        static int GetInfoObjectSize(uint8_t aType) noexcept;
 
     private:
         class LookupKey
@@ -41,8 +43,10 @@ namespace IEC104
 
 
         InfoObjectFactory(); // No instance
-        using CreateFunctions = std::map<LookupKey, std::function<SharedInfoObject(void)>>;
-        static CreateFunctions msFunctions;
+
+        static std::map<LookupKey, int> msRegistered;
+        static std::vector<std::function<SharedInfoObject(void)>> msFunctions;
+        static std::vector<int> msSizes;
     };
     
     /**
@@ -67,13 +71,13 @@ namespace IEC104
         EXTERNAL = 1
     };
 
-    template <int TYPE_ID, typename INFOOBJECT, RegisteredBy aPriority>
+    template <int TYPE_ID, typename INFOOBJECT, uint16_t SIZE, RegisteredBy aPriority>
     class StaticRegistration
     {
     public:
         explicit StaticRegistration() noexcept
         {
-			InfoObjectFactory::RegisterInfoObject(TYPE_ID, static_cast<int> (aPriority),
+			InfoObjectFactory::RegisterInfoObject(TYPE_ID, static_cast<int> (aPriority), SIZE,
 				[]() -> SharedInfoObject
 				{
 					return SharedInfoObject(new INFOOBJECT);
