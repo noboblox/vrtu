@@ -64,6 +64,7 @@ namespace IEC104
      *
      * @tparam TYPE_ID IEC 60870-5-101/-104 type id
      * @tparam INFOOBJECT Class to be created for type id
+     * @tparam SIZE Decoding size of the InfoObject excluding the IOA size
      */
 
     enum class RegisteredBy
