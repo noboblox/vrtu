@@ -1,5 +1,7 @@
 #include "protocols/iec104/asdu.hpp"
 
+#include "errordecode.hpp"
+
 namespace IEC104
 {
     AsduConfig AsduConfig::Defaults(2, 2, 3);
@@ -69,7 +71,7 @@ namespace IEC104
         {
             // TODO report something
             Clear();
-            throw e;
+            throw;
         }
     }
     
@@ -82,33 +84,36 @@ namespace IEC104
 
     void Asdu::ReadHeader(ByteStream& arBuffer)
     {
-        mType = static_cast<IEC104::Type> (arBuffer.ReadByte());
+        RETHROW_FAIL_AS_DECODE_ERROR(mType = static_cast<IEC104::Type> (arBuffer.ReadByte()), mType);
 
         {
-            const uint8_t encoded = arBuffer.ReadByte();
+            uint8_t encoded;
+            RETHROW_FAIL_AS_DECODE_ERROR(encoded = arBuffer.ReadByte(), mSize);
             mSize = (encoded & 0x7F);
             mIsSequence = (encoded & 0x80);
         }
 
         {
-            const uint8_t encoded = arBuffer.ReadByte();
+            uint8_t encoded;
+            RETHROW_FAIL_AS_DECODE_ERROR(encoded = arBuffer.ReadByte(), mReason);
             mReason = Reason(static_cast<ReasonCode>(encoded & 0x3F), encoded & 0x40, encoded & 0x80);
         }
 
         if (mConfig.GetReasonSize() == 2)
         {
-            mOrigin = arBuffer.ReadByte();
+            RETHROW_FAIL_AS_DECODE_ERROR(mOrigin = arBuffer.ReadByte(), mOrigin);
         }
         else
         {
             mOrigin.Clear();
         }
 
-        int ca = arBuffer.ReadByte();
+        int ca;
+        RETHROW_FAIL_AS_DECODE_ERROR(ca = arBuffer.ReadByte(), mCommonAddress);
 
         if (mConfig.GetCASize() == 2)
         {
-            ca += (arBuffer.ReadByte() << 8);
+            RETHROW_FAIL_AS_DECODE_ERROR(ca += (arBuffer.ReadByte() << 8), mCommonAddress);
         }
 
         mCommonAddress = ca;

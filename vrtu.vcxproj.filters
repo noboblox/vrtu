@@ -54,6 +54,12 @@
     <ClInclude Include="protocols\iec104\apdu.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="errornomoredata.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="errordecode.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">
@@ -87,6 +93,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="protocols\iec104\apdu.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="errornomoredata.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

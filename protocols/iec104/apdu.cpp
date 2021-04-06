@@ -1,6 +1,7 @@
 #include "protocols/iec104/apdu.hpp"
 
 #include <cstring>
+#include <iostream>
 #include <string>
 
 #include "core/bytestream.hpp"
@@ -98,6 +99,7 @@ namespace IEC104
                 mpAsdu->ReadFrom(arInput);
                 return true;
             }
+            catch (std::exception& e) { std::cout << e.what() << std::endl; }
             catch (...) {}
         }
 

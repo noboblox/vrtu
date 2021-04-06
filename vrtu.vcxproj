@@ -146,6 +146,8 @@
     <ClInclude Include="core\bytestream.hpp" />
     <ClInclude Include="core\data.hpp" />
     <ClInclude Include="core\namedenum.hpp" />
+    <ClInclude Include="errordecode.hpp" />
+    <ClInclude Include="errornomoredata.hpp" />
     <ClInclude Include="external\json_wrapper.hpp" />
     <ClInclude Include="protocols\iec104\104enums.hpp" />
     <ClInclude Include="protocols\iec104\apdu.hpp" />
@@ -160,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="104parser.cpp" />
     <ClCompile Include="core\data.cpp" />
+    <ClCompile Include="errornomoredata.cpp" />
     <ClCompile Include="external\json_wrapper.cpp" />
     <ClCompile Include="protocols\iec104\104enums.cpp" />
     <ClCompile Include="protocols\iec104\apdu.cpp" />

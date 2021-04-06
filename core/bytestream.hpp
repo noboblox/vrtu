@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "errornomoredata.hpp"
+
 class ByteStream
 {
 public:
@@ -50,7 +52,7 @@ public:
     const uint8_t* ReadData(size_t aBytes)
     {
         if (RemainingBytes() < aBytes)
-            throw std::invalid_argument("Not enough data left for requested read");
+            throw ErrorNoMoreData(mBuffer.size(), mBuffer.data(), mBuffer.data() + mIterator);
 
         const uint8_t* p_result = (mBuffer.data() + mIterator);
         mIterator += aBytes;

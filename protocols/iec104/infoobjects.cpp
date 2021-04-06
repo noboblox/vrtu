@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "protocols/iec104/quality.hpp"
+#include "errordecode.hpp"
 
 namespace IEC104
 {
@@ -74,7 +75,8 @@ namespace IEC104
 
     void BaseInfoObject::ReadFrom(ByteStream& arInput, int aAddressSize)
     {
-        const uint8_t* p_encoded = arInput.ReadData(aAddressSize);
+        const uint8_t* p_encoded = nullptr;
+        RETHROW_FAIL_AS_DECODE_ERROR(p_encoded = arInput.ReadData(aAddressSize), mAddress);
         mAddress = InfoAddress(p_encoded, aAddressSize);
     }
 
@@ -113,7 +115,8 @@ namespace IEC104
     {
         BaseInfoObject::ReadFrom(arInput, aAddressSize);
 
-        const uint8_t encoded = arInput.ReadByte();
+        uint8_t encoded;
+        RETHROW_FAIL_AS_DECODE_ERROR(encoded = arInput.ReadByte(), mValue);
         mValue = (         encoded & 0x01);
         RequireNull(       encoded & 0x0E);
         mQuality = Quality(encoded & 0xF0);
@@ -140,7 +143,8 @@ namespace IEC104
     {
         BaseInfoObject::ReadFrom(arInput, aAddressSize);
 
-        const uint8_t encoded = arInput.ReadByte();
+        uint8_t encoded;
+        RETHROW_FAIL_AS_DECODE_ERROR(encoded = arInput.ReadByte(), mValue);
         mValue = DoublePoint(encoded & 0x03);
         RequireNull(encoded & 0x0C);
         mQuality = Quality(encoded & 0xF0);
@@ -170,16 +174,17 @@ namespace IEC104
 
         {
             // Data to read: 16 bit signed int as little-endian
-
             // The read is performed as uint16, to make sure that the compiler doesn't mess with the sign bit during the bit-shift
-            uint16_t encoded = arInput.ReadByte();
-            encoded |= (arInput.ReadByte() << 8);
+            uint16_t encoded;
+            RETHROW_FAIL_AS_DECODE_ERROR(encoded = arInput.ReadByte(), mValue);
+            RETHROW_FAIL_AS_DECODE_ERROR(encoded |= (arInput.ReadByte() << 8), mValue);
 
             const int16_t result = static_cast<int16_t>(encoded);
             mValue = result;
         }
 
-        const uint8_t encoded = arInput.ReadByte();
+        uint8_t encoded;
+        RETHROW_FAIL_AS_DECODE_ERROR(encoded = arInput.ReadByte(), mQuality);
         RequireNull(encoded & 0x0E);
         mQuality = Quality(encoded);
     }
@@ -212,18 +217,25 @@ namespace IEC104
         // Assumption: Host endianess is the same for "float" and "int"
         {
             // For IEC104 the float is always stored as little-endian (first byte is LSB):
-            uint32_t encoded;
-            encoded  =  arInput.ReadByte();
-            encoded |= (arInput.ReadByte() << 8);
-            encoded |= (arInput.ReadByte() << 16);
-            encoded |= (arInput.ReadByte() << 24);
+            RETHROW_FAIL_AS_DECODE_ERROR
+            (
+                uint32_t encoded;
+                encoded = arInput.ReadByte();
+                encoded |= (arInput.ReadByte() << 8);
+                encoded |= (arInput.ReadByte() << 16);
+                encoded |= (arInput.ReadByte() << 24);
 
-            mValue = *reinterpret_cast<float*>(&encoded);
+                mValue = *reinterpret_cast<float*>(&encoded),
+            mValue);
+
         }
 
-        const uint8_t encoded = arInput.ReadByte();
-        RequireNull(encoded & 0x0E);
-        mQuality = Quality(encoded);
+        RETHROW_FAIL_AS_DECODE_ERROR
+        (
+            const uint8_t encoded = arInput.ReadByte();
+            RequireNull(encoded & 0x0E);
+            mQuality = Quality(encoded),
+        mQuality);
     }
 
     void DataMeasuredFloat::WriteTo(ByteStream& arOutput) const
