@@ -1,6 +1,7 @@
 #ifndef JSON_JSON_HPP_
 #define JSON_JSON_HPP_
 
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 
@@ -71,6 +72,9 @@ namespace JSON
                           std::is_null_pointer<JsonLeafType>::value ||
                           std::is_same<std::string, JsonLeafType>::value,
                           "Type is not a valid JSON leaf-type");
+
+            //  The requested type has no template-specialization (below). Should not happen, but better safe than sorry
+            throw std::invalid_argument("No template-specialization for type. This is a compile-time problem");
         }
 
         template<> void inline Set<int8_t>(const int8_t& arValue)     { SetInt(arValue); }
