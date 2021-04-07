@@ -66,6 +66,9 @@
     <ClInclude Include="external\style.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="errorunknowntype.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">
@@ -105,6 +108,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="external\style.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="errorunknowntype.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

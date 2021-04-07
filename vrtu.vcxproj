@@ -148,6 +148,7 @@
     <ClInclude Include="core\namedenum.hpp" />
     <ClInclude Include="errordecode.hpp" />
     <ClInclude Include="errornomoredata.hpp" />
+    <ClInclude Include="errorunknowntype.hpp" />
     <ClInclude Include="external\json_wrapper.hpp" />
     <ClInclude Include="external\private\termcolor\termcolor.hpp" />
     <ClInclude Include="external\style.hpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="104parser.cpp" />
     <ClCompile Include="core\data.cpp" />
     <ClCompile Include="errornomoredata.cpp" />
+    <ClCompile Include="errorunknowntype.cpp" />
     <ClCompile Include="external\json_wrapper.cpp" />
     <ClCompile Include="external\style.cpp" />
     <ClCompile Include="protocols\iec104\104enums.cpp" />
