@@ -65,13 +65,20 @@ public:
         return mValue;
     }
 
-    const std::string& GetLabel() const
+    const std::string& GetLabel(bool aAllowUndefined = false) const
     {
         for (const auto& r_def : msDefinition)
         {
             if (r_def.GetValue() == mValue)
                 return r_def.GetLabel();
         }
+        
+        if (aAllowUndefined)
+        {
+            static const std::string LABEL_UNDEFINED("unknown");
+            return LABEL_UNDEFINED;
+        }
+
         throw std::invalid_argument("Value does not have a label");
     }
 
