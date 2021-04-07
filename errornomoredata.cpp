@@ -5,19 +5,21 @@
 #include <iomanip>
 #include <sstream>
 
-ErrorNoMoreData::ErrorNoMoreData(size_t aBufferSize, const uint8_t* apContextBegin, const uint8_t* apContextEnd)
+#include "core/bytestream.hpp"
+#include "external/style.hpp"
+
+ErrorNoMoreData::ErrorNoMoreData(const ByteStream& arBuffer)
     : std::exception(),
-    mBufferSize(aBufferSize),
+    mBufferSize(arBuffer.BufferSize()),
     mContextSize(0), mContext(),
     mMsgLines({ "[ERROR] End of data reached unexpectedly"})
 {
-    if (apContextBegin && apContextEnd &&
-        apContextBegin < apContextEnd)
+    if (mBufferSize != 0)
     {
-        mContextSize = std::min(std::distance(apContextBegin, apContextEnd),
-            static_cast<int> (sizeof(mContext)));
+        mContextSize = std::min(std::distance(arBuffer.Begin(), arBuffer.End()),
+                           static_cast<int> (sizeof(mContext)));
 
-        std::memcpy(mContext, apContextEnd - mContextSize, mContextSize);
+        std::memcpy(mContext, arBuffer.End() - mContextSize, mContextSize);
     }
 }
 
@@ -37,25 +39,31 @@ void ErrorNoMoreData::ClearLines() noexcept
 
 char const* ErrorNoMoreData::what() const
 {
-    std::ostringstream result;
+    std::stringstream result;
+    PrintError(result);
+    mWhat = result.str();
+    return mWhat.c_str();
+}
 
+std::ostream& ErrorNoMoreData::PrintError(std::ostream & arOutput) const
+{
     // Error message lines
     for (const auto& msg : mMsgLines)
-        result << msg << "\n";
+        arOutput << STYLE::red << msg  << "\n";
 
     static constexpr char DETAIL_INDENT[] = "    ";
 
     // Buffer position line
-    result << DETAIL_INDENT;
+    arOutput << STYLE::reset << DETAIL_INDENT;
 
     for (int i = 0; i < mContextSize + 1; ++i)
-        result << " | " << std::setw(4) << (mBufferSize - mContextSize + i);
+        arOutput << " | " << std::setw(4) << (mBufferSize - mContextSize + i);
 
-    result << " |\n";
+    arOutput << " |\n";
 
     // Data line
 
-    result << DETAIL_INDENT;
+    arOutput << DETAIL_INDENT;
 
     /*
     * ios_flags can be a bit stubborn with the hex base includung leading 0 padding. (e.g. 0x00)
@@ -65,19 +73,17 @@ char const* ErrorNoMoreData::what() const
     for (int i = 0; i < mContextSize; ++i)
     {
         std::snprintf(byte, sizeof(byte), "0x%02X", mContext[i]);
-        result << " | " << byte;
+        arOutput << " | " << byte;
     }
 
-    result << " | " << std::setw(4) << "end" << " |\n";
+    arOutput << " | " << std::setw(4) << "end" << " |\n";
 
     // Error indicator line
-    result << DETAIL_INDENT;
+    arOutput << DETAIL_INDENT;
 
     for (int i = 0; i < mContextSize; ++i)
-        result << "   " << std::setw(4) << " ";
+        arOutput << "   " << std::setw(4) << " ";
 
-    result << "   " << std::setw(4) << "^^^" << "\n";
-
-    mWhat = result.str();
-    return mWhat.c_str();
+    arOutput << "   " << std::setw(4) << STYLE::red << "^^^" << STYLE::reset << "\n";
+    return arOutput;
 }
