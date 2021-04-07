@@ -10,14 +10,45 @@
 class ByteStream
 {
 public:
-    explicit ByteStream()
+    explicit ByteStream() noexcept
         : mIterator(0), mBuffer() {}
 
-    void ResetIterator()
+    /* Buffer status API (for error handling) */
+
+    /// Overall size of the internal buffer
+    inline size_t BufferSize() const noexcept
+    {
+        return mBuffer.size();
+    }
+
+    /// Begin iterator of the internal buffer
+    inline const uint8_t* Begin() const noexcept
+    {
+        return mBuffer.empty() ? nullptr : mBuffer.data();
+    }
+
+    /// End iterator of the internal buffer
+    inline const uint8_t* End() const noexcept
+    {
+        return mBuffer.empty() ? nullptr : (mBuffer.data() + mBuffer.size());
+    }
+
+    /// Current iterator position inside the internal buffer
+    /// Do not use for data access! The iterator is not incremented
+    inline const uint8_t* Iterator() const noexcept
+    {
+        return mBuffer.empty() ? nullptr : (mBuffer.data() + mIterator);
+    }
+
+    /* Data access API */
+
+    /// Reset the stream iterator 
+    void ResetIterator() noexcept
     {
         mIterator = 0;
     }
-    inline size_t RemainingBytes() const
+
+    inline size_t RemainingBytes() const noexcept
     {
         return mBuffer.size() - mIterator;
     }
@@ -52,9 +83,9 @@ public:
     const uint8_t* ReadData(size_t aBytes)
     {
         if (RemainingBytes() < aBytes)
-            throw ErrorNoMoreData(mBuffer.size(), mBuffer.data(), mBuffer.data() + mIterator);
+            throw ErrorNoMoreData(*this);
 
-        const uint8_t* p_result = (mBuffer.data() + mIterator);
+        const uint8_t* p_result = Iterator();
         mIterator += aBytes;
         return p_result;
     }
