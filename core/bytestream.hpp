@@ -40,6 +40,13 @@ public:
         return mBuffer.empty() ? nullptr : (mBuffer.data() + mIterator);
     }
 
+    /// Rollback the internal iterator. In case an error occured while decoding an already read data portion
+    inline void Rollback(size_t aCount) noexcept
+    {
+        if (mIterator >= aCount)
+            mIterator -= aCount;
+    }
+
     /* Data access API */
 
     /// Reset the stream iterator 
