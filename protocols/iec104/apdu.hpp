@@ -14,7 +14,19 @@ namespace IEC104
     class Apdu
     {
     public:
-        static constexpr int GetNeededSize() noexcept { return sizeof(mData); }
+        static constexpr size_t GetHeaderSize() noexcept { return sizeof(mData); }
+        static constexpr size_t GetMaximumMsgSize() noexcept { return 0xFF; }
+        
+        // Get the size of the complete message including header
+        // Needs at least a fully received header @see GetHeaderSize()
+        static size_t GetMessageSize(const void* apHeader) noexcept
+        {
+            // 1. IEC104 stores the message size at the 2nd inside the message (offset 1)
+            // 2. IEC104 does not count the first 2 bytes into the size (+ 2 needed).
+
+            return reinterpret_cast<const uint8_t*>(apHeader)[1] + 2;
+        }
+
         static constexpr int MAX_SEQUENCE = 0x7FFF;
 
         static inline void IncrementSequence(int& arSequence)
@@ -29,6 +41,7 @@ namespace IEC104
         Apdu(const uint8_t* apData, size_t aSize) noexcept;
 
         void Assign(const uint8_t* apData, size_t aSize);
+        void ReadFrom(ByteStream& arSource);
 
         bool IsValid() const noexcept;
 

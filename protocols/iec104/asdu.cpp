@@ -1,6 +1,7 @@
 #include "protocols/iec104/asdu.hpp"
 
 #include "errordecode.hpp"
+#include "errorunknowntype.hpp"
 
 namespace IEC104
 {
@@ -86,11 +87,21 @@ namespace IEC104
     {
         RETHROW_FAIL_AS_DECODE_ERROR(mType = static_cast<IEC104::Type> (arBuffer.ReadByte()), mType);
 
+        if (!InfoObjectFactory::HasType(static_cast<int>((*mType).GetValue())))
+        {
+            arBuffer.Rollback(1);
+            throw ErrorUnknownType(arBuffer, mType);
+        }
+
         {
             uint8_t encoded;
             RETHROW_FAIL_AS_DECODE_ERROR(encoded = arBuffer.ReadByte(), mSize);
             mSize = (encoded & 0x7F);
             mIsSequence = (encoded & 0x80);
+
+            if (GetExpectedSize() != (arBuffer.RemainingBytes() + 2))
+                //throw ErrorSizeUnexpected(mSize, mType);
+                throw std::invalid_argument("");
         }
 
         {
@@ -163,7 +174,7 @@ namespace IEC104
 
     int Asdu::GetExpectedSize() const
     {
-        int result = 3 + mConfig.GetReasonSize() + mConfig.GetCASize();
+        int result = 2 + mConfig.GetReasonSize() + mConfig.GetCASize();
         const int type = mType.IsValid() ? static_cast<int> ((*mType).GetValue()) : 0;
 
         if (mSize.IsValid() && type && 

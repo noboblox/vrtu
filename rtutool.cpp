@@ -17,6 +17,9 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+
+namespace IP = boost::asio::ip;
+
 namespace IEC104
 {
     class Connection
@@ -25,6 +28,7 @@ namespace IEC104
 
         explicit Connection(boost::asio::ip::tcp::socket&& arSocket)
             : mSocket(std::move(arSocket)), mReadBuffer(), mWriteBuffer(),
+              mCurrentSize(0),
               mNextReceiveId(0), mNextSendId(0), mLastAcknoledgedId(0)
         {
         }
@@ -54,39 +58,67 @@ namespace IEC104
             boost::system::error_code ec;
             PrintMessage(send, true);
 
-            boost::asio::write(mSocket, boost::asio::buffer(send.GetData(), IEC104::Apdu::GetNeededSize()), ec);
+            boost::asio::write(mSocket, boost::asio::buffer(send.GetData(), IEC104::Apdu::GetHeaderSize()), ec);
             return !ec.failed();
         }
 
-        bool ReceiveMessage()
+        void ReceiveNextMessage()
         {
-            boost::system::error_code ec;
-            boost::asio::read(mSocket, 
-                boost::asio::buffer(mReadBuffer, IEC104::Apdu::GetNeededSize()), ec);
+            mCurrentSize = 0;
+            ReadPartial(mReadBuffer.data(), IEC104::Apdu::GetHeaderSize());
+        }
 
-            if (ec)
-                return false;
+        void ReadPartial(void* apDestination, size_t aTargetSize)
+        {
+            mSocket.async_read_some(boost::asio::buffer(apDestination, aTargetSize),
+                [this](const boost::system::error_code& arError, size_t aBytesReceived) {this->OnBytesReceived(arError, aBytesReceived); });
+        }
 
-            mReceived.Assign(mReadBuffer.data(), IEC104::Apdu::GetNeededSize());
+        void OnBytesReceived(const boost::system::error_code& arError, size_t aBytesReceived)
+        {
+            if (arError)
+            {
+                // TODO Report and disconnect
+                return;
+            }
+
+            mCurrentSize += aBytesReceived;
+
+            if (mCurrentSize < IEC104::Apdu::GetHeaderSize())
+                ReadPartial(&mReadBuffer[mCurrentSize], IEC104::Apdu::GetHeaderSize() - mCurrentSize);
+            else if (mCurrentSize < IEC104::Apdu::GetMessageSize(mReadBuffer.data()))
+                ReadPartial(&mReadBuffer[mCurrentSize], IEC104::Apdu::GetMessageSize(mReadBuffer.data()) - mCurrentSize);
+            else if (mCurrentSize == IEC104::Apdu::GetMessageSize(mReadBuffer.data()))
+            {
+                ProcessMessage();
+                ReceiveNextMessage();
+            }
+
+            return; // Error
+        }
+
+
+        bool ProcessMessage()
+        {
+            ByteStream msg;
+            msg.WriteData(mReadBuffer.data(), mCurrentSize);
+            mReceived.ReadFrom(msg);
 
             if (!mReceived.IsValid() || !HandleSequences(mReceived))
                 return false;
 
-            const int asdu_size = mReceived.GetAsduSize();
-            
-            if (asdu_size)
+            PrintMessage(mReceived, false);
+
+            if (mReceived.NeedsConfirmation())
             {
-                boost::asio::read(mSocket,
-                    boost::asio::buffer(mReadBuffer, asdu_size), ec);
-
-                if (ec)
-                    return false;
-
-                ByteStream asdu_data;
-                asdu_data.WriteData(mReadBuffer.data(), asdu_size);
-
-                if (!mReceived.ReadAsdu(asdu_data))
-                    return false;
+                mReceived.ConvertToConfirmation();
+                PrintMessage(mReceived, true);
+                boost::asio::write(mSocket,
+                    boost::asio::buffer(mReceived.GetData(), mReceived.GetHeaderSize()));
+            }
+            else if (mReceived.HasAsdu())
+            {
+                ConfirmReceive();
             }
 
             return true;
@@ -115,36 +147,64 @@ namespace IEC104
         void Start()
         {
             std::cout << "Connected to " << mSocket.remote_endpoint().address().to_string() << ":" << mSocket.remote_endpoint().port() << std::endl;
-
-            while (true)
-            {
-                if (!ReceiveMessage())
-                    return; // Error
-
-                PrintMessage(mReceived, false);
-
-                if (mReceived.NeedsConfirmation())
-                {
-                    mReceived.ConvertToConfirmation();
-                    PrintMessage(mReceived, true);
-                    boost::asio::write(mSocket, 
-                        boost::asio::buffer(mReceived.GetData(), IEC104::Apdu::GetNeededSize()));
-                }
-                else if (mReceived.HasAsdu())
-                {
-                    ConfirmReceive();
-                }
-            }
+            ReceiveNextMessage();
         }
          
     private:
         boost::asio::ip::tcp::socket mSocket;
         std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
+        int mCurrentSize;
         int mNextReceiveId, mNextSendId, mLastAcknoledgedId;
         Apdu mReceived;
     };
-}
 
+    class Server
+    {
+    public:
+        explicit Server(boost::asio::io_context& arContext, const IP::address& arIP, uint16_t aListeningPort = 2404)
+            : mrContext(arContext), mpAcceptingSocket(nullptr)
+        {
+            // A tcp endpoint for a specific interface
+            boost::asio::ip::tcp::endpoint server_endpoint(arIP, aListeningPort);
+            mpAcceptingSocket.reset(new IP::tcp::acceptor(mrContext, server_endpoint));
+
+            std::cout << "Waiting for connections on " << arIP << ":" << aListeningPort << std::endl;
+            StartAccept();
+        }
+
+
+    private:
+        void StartAccept()
+        {
+            mpAcceptingSocket->async_accept(
+                [this](boost::system::error_code aError, IP::tcp::socket&& arNewSocket)
+                {
+                    this->FinishAccept(aError, std::move(arNewSocket));
+                });
+        }
+
+        void FinishAccept(boost::system::error_code aError, IP::tcp::socket&& arNewSocket)
+        {
+            if (!aError)
+            {
+                mConnections.emplace_back(Connection(std::move(arNewSocket)));
+                mConnections.rbegin()->Start();
+                StartAccept();
+            }
+            else
+            {
+                std::cout << aError.message() << std::endl;
+            }
+        }
+
+    private:
+        boost::asio::io_context& mrContext;
+        std::unique_ptr<IP::tcp::acceptor> mpAcceptingSocket;
+
+        std::vector<Connection> mConnections;
+    };
+
+}
 int main(int argc, char* argv[])
 {
     try
@@ -166,19 +226,8 @@ RtuTool::RtuTool(int aArgc, char* aArgv[])
 void RtuTool::Run()
 {
     PrintWelcomeMessage();
-    boost::system::error_code error;
-
-    boost::asio::ip::tcp::endpoint server_endpoint(boost::asio::ip::tcp::v4(), 2404);
-    boost::asio::ip::tcp::acceptor server_accept(mContext, server_endpoint);
-    boost::asio::ip::tcp::socket server_socket(mContext);
-    server_accept.accept(server_socket, error);
-    
-    IEC104::Connection slave(std::move(server_socket));
-    slave.Start();
-
-    // TODO Errors
-
-    std::cout << "Disconnected" << std::endl;
+    IEC104::Server server(mContext, IP::make_address("127.0.0.1"));
+    mContext.run();
 }
 
 void RtuTool::PrintWelcomeMessage() const

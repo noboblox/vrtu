@@ -5,6 +5,7 @@
 #include <string>
 
 #include "core/bytestream.hpp"
+#include "errorunknowntype.hpp"
 #include "protocols/iec104/asdu.hpp"
 
 namespace IEC104
@@ -17,19 +18,27 @@ namespace IEC104
     Apdu::Apdu(const uint8_t* apData, size_t aSize) noexcept
         : mType(INVALID)
     {
-        Assign(apData, aSize);
+        ByteStream source;
+        source.WriteData(apData, aSize);
+        ReadFrom(source);
     }
 
-    void Apdu::Assign(const uint8_t* apData, size_t aSize)
+
+    void Apdu::ReadFrom(ByteStream& arSource)
     {
-        if (apData && aSize >= GetNeededSize())
+        if (arSource.RemainingBytes() >= GetHeaderSize())
         {
-            std::memcpy(mData, apData, GetNeededSize());
+            std::memcpy(mData, arSource.ReadData(GetHeaderSize()), GetHeaderSize());
             mType = VerifyMessage();
+
+            if (mType == DATA)
+            {
+                ReadAsdu(arSource) ? mType = DATA : mType = INVALID;
+            }
         }
         else
         {
-            std::memset(mData, 0, GetNeededSize());
+            std::memset(mData, 0, GetHeaderSize());
         }
     }
 
@@ -99,7 +108,9 @@ namespace IEC104
                 mpAsdu->ReadFrom(arInput);
                 return true;
             }
-            catch (std::exception& e) { std::cout << e.what() << std::endl; }
+            catch (ErrorNoMoreData& e) { e.PrintError(std::cout) << std::endl; } // Support coloring on windows
+            catch (ErrorUnknownType& e) { e.PrintError(std::cout) << std::endl; } // Support coloring on windows
+            catch (std::exception& e)  { std::cout << e.what() << std::endl; }
             catch (...) {}
         }
 
@@ -193,6 +204,12 @@ namespace IEC104
             break;
         };
     }
+
+    // The IEC104 sequence encoding stores 15 bit values
+    // The bit 0 of the lower byte is not used for sequencing, because it's needed for message identification
+    //            7  6  5  4  3  2  1  0
+    // apBegin[0] X  X  X  X  X  X  X  0  <-- least significant bit @ 1
+    // apBegin[1] X  X  X  X  X  X  X  X  <-- most  significant bit @ 7
 
     int Apdu::ReadSequenceInternal(const uint8_t* apBegin) const noexcept
     {

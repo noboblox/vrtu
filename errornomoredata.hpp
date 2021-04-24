@@ -28,7 +28,7 @@ public:
      * This is needed, because some OSses (windows) do not support color codes inside stringstreams.
      * 
      * This means, calls to what() don't have any coloring on such OSses.
-     * On reasonable OSses, ANSI escape chars are used, and this should be not a problem.
+     * On OSses, where ANSI escape chars are used, this should be not a problem.
      */
     std::ostream& PrintError(std::ostream& arOutput) const;
 

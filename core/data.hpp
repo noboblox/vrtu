@@ -38,7 +38,7 @@ public:
 
     virtual void Clear() noexcept { SetValid(false); }
 
-    /// Prepend path own subpath oriniating from a specific child node.
+    /// Prepend path own subpath originating from a specific child node.
     /// This function should be called recursively, while navigating upwards.
     /// It can be overriden for special casing (e.g. array with [] indexing)
     virtual void PrependPathForChild(const BaseData& arChild, char aSeparator, std::string& arModifiedPath) const;
