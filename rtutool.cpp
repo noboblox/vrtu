@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "core/bytestream.hpp"
 #include "protocols/iec104/apdu.hpp"
@@ -26,8 +27,10 @@ namespace IEC104
     {
     public:
 
-        explicit Connection(boost::asio::ip::tcp::socket&& arSocket)
-            : mSocket(std::move(arSocket)), mReadBuffer(), mWriteBuffer(),
+        explicit Connection(boost::asio::ip::tcp::socket&& arSocket, const std::function<void(Connection&)>& arClosedHandler)
+            : mSocket(std::move(arSocket)), 
+              ClosedHandler(arClosedHandler),
+              mReadBuffer(), mWriteBuffer(),
               mCurrentSize(0),
               mNextReceiveId(0), mNextSendId(0), mLastAcknoledgedId(0)
         {
@@ -78,7 +81,7 @@ namespace IEC104
         {
             if (arError)
             {
-                // TODO Report and disconnect
+                CloseError(arError.message());
                 return;
             }
 
@@ -149,9 +152,25 @@ namespace IEC104
             std::cout << "Connected to " << mSocket.remote_endpoint().address().to_string() << ":" << mSocket.remote_endpoint().port() << std::endl;
             ReceiveNextMessage();
         }
+
+        void CloseError(const std::string& arErrorMsg)
+        {
+            std::cout << "[ERROR] " << arErrorMsg << std::endl;
+
+            boost::system::error_code ec;
+            mSocket.close(ec);
+
+            ClosedHandler(*this);
+        }
+
+        ~Connection()
+        {
+            std::cout << "Conection destroyed" << std::endl;
+        }
          
     private:
         boost::asio::ip::tcp::socket mSocket;
+        std::function<void(Connection&)> ClosedHandler;
         std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
         int mCurrentSize;
         int mNextReceiveId, mNextSendId, mLastAcknoledgedId;
@@ -168,7 +187,7 @@ namespace IEC104
             boost::asio::ip::tcp::endpoint server_endpoint(arIP, aListeningPort);
             mpAcceptingSocket.reset(new IP::tcp::acceptor(mrContext, server_endpoint));
 
-            std::cout << "Waiting for connections on " << arIP << ":" << aListeningPort << std::endl;
+            std::cout << "Server socket listening on " << arIP << ":" << aListeningPort << std::endl;
             StartAccept();
         }
 
@@ -187,8 +206,8 @@ namespace IEC104
         {
             if (!aError)
             {
-                mConnections.emplace_back(Connection(std::move(arNewSocket)));
-                mConnections.rbegin()->Start();
+                mConnections.emplace_back(new Connection(std::move(arNewSocket), [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
+                (*mConnections.rbegin())->Start();
                 StartAccept();
             }
             else
@@ -196,12 +215,32 @@ namespace IEC104
                 std::cout << aError.message() << std::endl;
             }
         }
+        
+        void OnConnectionClosed(Connection& arClosed)
+        {
+            // Safely delete later, not now!
+            boost::asio::post([this, &arClosed]() {this->DeleteConnection(arClosed); });
+        }
+
+        void DeleteConnection(Connection& apClosed)
+        {
+            auto it = mConnections.begin();
+
+            for (; it != mConnections.end(); ++it)
+            {
+                if (it->get() == &apClosed)
+                {
+                    mConnections.erase(it);
+                    break;
+                }
+            }
+        }
 
     private:
         boost::asio::io_context& mrContext;
         std::unique_ptr<IP::tcp::acceptor> mpAcceptingSocket;
 
-        std::vector<Connection> mConnections;
+        std::vector<std::unique_ptr<Connection>> mConnections;
     };
 
 }
