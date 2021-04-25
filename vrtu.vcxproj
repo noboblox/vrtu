@@ -155,6 +155,7 @@
     <ClInclude Include="protocols\iec104\104enums.hpp" />
     <ClInclude Include="protocols\iec104\apdu.hpp" />
     <ClInclude Include="protocols\iec104\asdu.hpp" />
+    <ClInclude Include="protocols\iec104\connection.hpp" />
     <ClInclude Include="protocols\iec104\data104.hpp" />
     <ClInclude Include="protocols\iec104\infoaddress.hpp" />
     <ClInclude Include="protocols\iec104\infoobjects.hpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="protocols\iec104\104enums.cpp" />
     <ClCompile Include="protocols\iec104\apdu.cpp" />
     <ClCompile Include="protocols\iec104\asdu.cpp" />
+    <ClCompile Include="protocols\iec104\connection.cpp" />
     <ClCompile Include="protocols\iec104\data104.cpp" />
     <ClCompile Include="protocols\iec104\infoaddress.cpp" />
     <ClCompile Include="protocols\iec104\infoobjects.cpp" />

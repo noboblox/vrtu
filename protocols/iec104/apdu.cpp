@@ -23,6 +23,10 @@ namespace IEC104
         ReadFrom(source);
     }
 
+    Apdu::~Apdu()
+    {
+    }
+
 
     void Apdu::ReadFrom(ByteStream& arSource)
     {

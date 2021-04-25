@@ -69,6 +69,9 @@
     <ClInclude Include="errorunknowntype.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="protocols\iec104\connection.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">
@@ -111,6 +114,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="errorunknowntype.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="protocols\iec104\connection.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

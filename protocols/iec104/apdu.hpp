@@ -39,8 +39,8 @@ namespace IEC104
 
         explicit Apdu() noexcept;
         Apdu(const uint8_t* apData, size_t aSize) noexcept;
+        ~Apdu();
 
-        void Assign(const uint8_t* apData, size_t aSize);
         void ReadFrom(ByteStream& arSource);
 
         bool IsValid() const noexcept;
