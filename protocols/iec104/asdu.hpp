@@ -31,8 +31,6 @@ namespace IEC104
         void SetIOASize(int aValue);
 
     private:
-        void RequireRange(int aMin, int aMax, int aChecked) const;
-
         int mReasonSize;
         int mCASize;
         int mIOASize;

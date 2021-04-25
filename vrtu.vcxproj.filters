@@ -72,6 +72,9 @@
     <ClInclude Include="protocols\iec104\connection.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="core\util.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\data.cpp">

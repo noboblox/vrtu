@@ -1,5 +1,6 @@
 #include "protocols/iec104/asdu.hpp"
 
+#include "core/util.hpp"
 #include "errordecode.hpp"
 #include "errorunknowntype.hpp"
 
@@ -18,26 +19,20 @@ namespace IEC104
 
     void AsduConfig::SetCASize(int aValue)
     {
-        RequireRange(1, 2, aValue);
+        UTIL::AssertRange(1, 2, aValue);
         mCASize = aValue;
     }
 
     void AsduConfig::SetIOASize(int aValue)
     {
-        RequireRange(1, 3, aValue);
+        UTIL::AssertRange(1, 3, aValue);
         mIOASize = aValue;
     }
 
     void AsduConfig::SetReasonSize(int aValue)
     {
-        RequireRange(1, 2, aValue);
+        UTIL::AssertRange(1, 2, aValue);
         mReasonSize = aValue;
-    }
-
-    void AsduConfig::RequireRange(int aMin, int aMax, int aChecked) const
-    {
-        if (aChecked < aMin || aChecked > aMax)
-            throw std::invalid_argument("Value out of range");
     }
 
     Asdu::Asdu(const AsduConfig& arConfig)
