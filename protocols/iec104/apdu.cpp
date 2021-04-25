@@ -266,7 +266,7 @@ namespace IEC104
     ReceiveConfirmation::ReceiveConfirmation(int aReceiveCounter)
         : Apdu()
     {
-        if (aReceiveCounter < MAX_SEQUENCE)
+        if (aReceiveCounter <= MAX_SEQUENCE)
         {
             SetType(RECEIVE_CONFIRM);
             SetReceiveCounter(aReceiveCounter);
