@@ -27,6 +27,26 @@ namespace IEC104
     {
     }
 
+    // Count hops from left to right.
+    // If aLeft < aRight -> positive
+    // If aRight < aLeft -> negative
+    int Apdu::SequenceDistance(int aLeft, int aRight) noexcept
+    {
+        const int distance_normal = aRight - aLeft;
+
+        int distance_overflow;
+
+        if (aLeft < aRight)
+            distance_overflow = aRight - (aLeft + MAX_SEQUENCE);
+        else
+            distance_overflow = (aRight + MAX_SEQUENCE) - aLeft;
+
+        if (std::abs(distance_overflow) < std::abs(distance_normal))
+            return distance_overflow;
+        else
+            return distance_normal;
+    }
+
 
     void Apdu::ReadFrom(ByteStream& arSource)
     {

@@ -29,13 +29,15 @@ namespace IEC104
 
         static constexpr int MAX_SEQUENCE = 0x7FFF;
 
-        static inline void IncrementSequence(int& arSequence)
+        static inline void IncrementSequence(int& arSequence) noexcept
         {
             if (arSequence >= MAX_SEQUENCE)
                 arSequence = 0;
             else
                 ++arSequence;
         }
+
+        static int SequenceDistance(int aLeft, int aRight) noexcept;
 
         explicit Apdu() noexcept;
         Apdu(const uint8_t* apData, size_t aSize) noexcept;
