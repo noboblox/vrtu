@@ -21,7 +21,7 @@ namespace CORE
         void operator()(Args... args) const
         {
             for (const auto& Call : mCallees)
-                Call(args);
+                Call(args...);
         }
 
     private:
