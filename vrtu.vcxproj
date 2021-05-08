@@ -146,7 +146,9 @@
     <ClInclude Include="core\bytestream.hpp" />
     <ClInclude Include="core\data.hpp" />
     <ClInclude Include="core\namedenum.hpp" />
+    <ClInclude Include="core\signal.hpp" />
     <ClInclude Include="core\util.hpp" />
+    <ClInclude Include="core\watchdog.hpp" />
     <ClInclude Include="errordecode.hpp" />
     <ClInclude Include="errornomoredata.hpp" />
     <ClInclude Include="errorunknowntype.hpp" />
