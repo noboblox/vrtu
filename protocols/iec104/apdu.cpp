@@ -11,7 +11,7 @@
 namespace IEC104
 {
     Apdu::Apdu() noexcept
-        : mType(INVALID), mData()
+        : mType(INVALID), mHeader()
     {
     }
 
@@ -52,7 +52,7 @@ namespace IEC104
     {
         if (arSource.RemainingBytes() >= GetHeaderSize())
         {
-            std::memcpy(mData, arSource.ReadData(GetHeaderSize()), GetHeaderSize());
+            std::memcpy(&mHeader, arSource.ReadData(GetHeaderSize()), GetHeaderSize());
             mType = VerifyMessage();
 
             if (mType == DATA)
@@ -62,7 +62,7 @@ namespace IEC104
         }
         else
         {
-            std::memset(mData, 0, GetHeaderSize());
+            std::memset(&mHeader, 0, GetHeaderSize());
         }
     }
 
@@ -78,7 +78,7 @@ namespace IEC104
 
     size_t Apdu::GetAsduSize() const noexcept 
     {
-        return HasAsdu() ? (mData[1] - 4) : 0; 
+        return HasAsdu() ? (mHeader.mSize - 4) : 0; 
     }
 
     bool Apdu::HasReceiveCounter() const noexcept 
@@ -93,33 +93,33 @@ namespace IEC104
 
     int Apdu::GetReceiveCounter() const noexcept
     {
-        return ReadSequenceInternal(&mData[4]);
+        return ReadSequenceInternal(mHeader.mControl + 2);
     }
 
     void Apdu::SetReceiveCounter(int aValue) noexcept
     {
         if (HasReceiveCounter() && aValue <= MAX_SEQUENCE)
         {
-            WriteSequenceInternal(&mData[4], aValue);
+            WriteSequenceInternal(mHeader.mControl + 2, aValue);
         }
     }
 
     int Apdu::GetSendCounter() const noexcept
     {
-        return ReadSequenceInternal(&mData[2]);
+        return ReadSequenceInternal(mHeader.mControl);
     }
 
     void Apdu::SetSendCounter(int aValue) noexcept
     {
         if (HasSendCounter() && aValue <= MAX_SEQUENCE)
         {
-            WriteSequenceInternal(&mData[2], aValue);
+            WriteSequenceInternal(mHeader.mControl, aValue);
         }
     }
 
     const void* Apdu::GetData() const noexcept 
     {
-        return mData; 
+        return &mHeader; 
     }
 
     bool Apdu::ReadAsdu(ByteStream& arInput) noexcept
@@ -170,7 +170,7 @@ namespace IEC104
         default:
             break;
         }
-        mData[2] = mType;
+        mHeader.mControl[0] = mType;
     }
 
     std::string Apdu::TypeToString() const
@@ -203,16 +203,16 @@ namespace IEC104
     {
         mType = aType;
 
-        mData[0] = 0x68;
-        mData[1] = 0x04;
-        std::memset(&mData[2], 0, 4);
+        mHeader.mStartByte = 0x68;
+        mHeader.mSize = 0x04;
+        std::memset(mHeader.mControl, 0, 4);
 
         switch (aType)
         {
             break;
 
         case RECEIVE_CONFIRM:
-            mData[2] = 0x01;
+            mHeader.mControl[0] = 0x01;
             break;
 
         case STARTDT_REQUEST:
@@ -221,7 +221,7 @@ namespace IEC104
         case STOPDT_CONFIRM:
         case TESTFR_REQUEST:
         case TESTFR_CONFIRM:
-            mData[2] = static_cast<uint8_t>(aType);
+            mHeader.mControl[0] = static_cast<uint8_t>(aType);
             break;
 
         default:
@@ -251,22 +251,22 @@ namespace IEC104
         // [5] Protocol control field 4
         // From here: Message end or ASDU begin
 
-        if ((mData[0] != 0x68) || (mData[1] < 4) || ((mData[4] & 0x01) != 0))
+        if ((mHeader.mStartByte != 0x68) || (mHeader.mSize < 4) || ((mHeader.mControl[2] & 0x01) != 0))
             return INVALID;
 
         // Type I
-        if ((mData[2] & 0x01) == 0)
+        if ((mHeader.mControl[0] & 0x01) == 0)
             return DATA;
 
         // Type S
-        else if (mData[2] == RECEIVE_CONFIRM && mData[3] == 0)
+        else if (mHeader.mControl[0] == RECEIVE_CONFIRM && mHeader.mControl[1] == 0)
             return RECEIVE_CONFIRM;
 
         // Now only type "U" is left, which means that only control field 1 is allowed to be != 0
-        else if ((mData[3] != 0) || (mData[4] != 0) || (mData[5]) != 0)
+        else if ((mHeader.mControl[1] != 0) || (mHeader.mControl[2] != 0) || (mHeader.mControl[3]) != 0)
             return INVALID;
 
-        switch (mData[2])
+        switch (mHeader.mControl[0])
         {
         case STARTDT_REQUEST:
         case STARTDT_CONFIRM:
@@ -274,7 +274,7 @@ namespace IEC104
         case STOPDT_CONFIRM:
         case TESTFR_REQUEST:
         case TESTFR_CONFIRM:
-            return static_cast<MessageType>(mData[2]);
+            return static_cast<MessageType>(mHeader.mControl[0]);
 
         default:
             return INVALID;

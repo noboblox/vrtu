@@ -14,7 +14,7 @@ namespace IEC104
     class Apdu
     {
     public:
-        static constexpr size_t GetHeaderSize() noexcept { return sizeof(mData); }
+        static constexpr size_t GetHeaderSize() noexcept { return sizeof(mHeader); }
         static constexpr size_t GetMaximumMsgSize() noexcept { return 0xFF; }
         
         // Get the size of the complete message including header
@@ -88,6 +88,12 @@ namespace IEC104
         void SetType(MessageType aType) noexcept;
 
     private:
+        struct Header
+        {
+            uint8_t mStartByte;
+            uint8_t mSize;
+            uint8_t mControl[4];
+        };
 
         /**
          * @brief Read the sequence number from an APDU
@@ -114,7 +120,7 @@ namespace IEC104
         MessageType VerifyMessage() noexcept;
 
         MessageType mType;
-        uint8_t mData[6];
+        Header mHeader;
         std::unique_ptr<Asdu> mpAsdu;
     };
 
