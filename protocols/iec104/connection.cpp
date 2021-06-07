@@ -38,7 +38,7 @@ namespace IEC104
         return success;
     }
 
-    bool Connection::ConfirmReceive()
+    bool Connection::AcknowledgeReceivedAsdus()
     {
         ReceiveConfirmation send(mNextReceiveId);
         boost::system::error_code ec;
@@ -94,23 +94,33 @@ namespace IEC104
             return false;
 
         PrintMessage(mReceived, false);
-
-        if (mReceived.NeedsConfirmation())
-        {
-            mReceived.ConvertToConfirmation();
-            PrintMessage(mReceived, true);
-            boost::asio::write(mSocket,
-                boost::asio::buffer(mReceived.GetData(), mReceived.GetHeaderSize()));
-        }
-        else if (mReceived.HasAsdu())
-        {
-            ConfirmReceive();
-        }
-
+        RespondTo(mReceived);
         return true;
     }
 
-    void Connection::PrintMessage(IEC104::Apdu& arMessage, bool aIsSend)
+    void Connection::ConfirmService(const Apdu& arReceived)
+    {
+        const Apdu confirmation = arReceived.CreateConfirmation();
+        PrintMessage(confirmation, true);
+        boost::asio::write(mSocket,
+            boost::asio::buffer(confirmation.GetData(), confirmation.GetHeaderSize()));
+    }
+
+
+    void Connection::RespondTo(const Apdu& arReceived)
+    {
+        if (arReceived.NeedsConfirmation())
+        {
+            ConfirmService(arReceived);
+        
+        }
+        else if (arReceived.HasAsdu())
+        {
+            AcknowledgeReceivedAsdus();
+        }
+    }
+
+    void Connection::PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend)
     {
 
         std::cout << "[" << (aIsSend ? "--> " : "<-- ") << mSocket.remote_endpoint().address().to_string() << ":" << std::setw(5) << mSocket.remote_endpoint().port() << "]"

@@ -36,15 +36,17 @@ namespace IEC104
         
         // Decode the message and respond confirmations
         bool ProcessMessage();
+        void RespondTo(const Apdu& arReceived);
 
         // Print the message on screen
-        void PrintMessage(IEC104::Apdu& arMessage, bool aIsSend);
+        void PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend);
 
         // Verify that a message is expected and update sequence counters
         bool HandleSequences(const IEC104::Apdu& arReceived);
         
         // Acknowlegde received messages
-        bool ConfirmReceive();
+        bool AcknowledgeReceivedAsdus();
+        void ConfirmService(const Apdu& arReceived);
 
         // Close the connection with an error message
         void CloseError(const std::string& arErrorMsg);

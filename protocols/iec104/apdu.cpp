@@ -23,6 +23,22 @@ namespace IEC104
         ReadFrom(source);
     }
 
+    Apdu::Apdu(const Apdu& arOther)
+        : mType(arOther.mType),
+          mHeader(arOther.mHeader),
+          mpAsdu(nullptr)
+    {
+        if (mType == DATA) // TODO FIXME
+            throw std::runtime_error("Copy construction of ASDUs not yet implemented");
+    }
+
+    Apdu::Apdu(Apdu&& arOther) noexcept
+        : mType(arOther.mType),
+          mHeader(arOther.mHeader),
+          mpAsdu(std::move(arOther.mpAsdu))
+    {
+    }
+
     Apdu::~Apdu()
     {
     }
@@ -62,7 +78,7 @@ namespace IEC104
         }
         else
         {
-            std::memset(&mHeader, 0, GetHeaderSize());
+            mHeader = { 0 };
         }
     }
 
@@ -154,23 +170,27 @@ namespace IEC104
                (mType == TESTFR_REQUEST);
     }
 
-    void Apdu::ConvertToConfirmation() noexcept
+    Apdu Apdu::CreateConfirmation() const noexcept
     {
+        Apdu result;
+
         switch (mType)
         {
         case STARTDT_REQUEST:
-            mType = STARTDT_CONFIRM;
+            result.InitHeader(STARTDT_CONFIRM);
             break;
         case STOPDT_REQUEST:
-            mType = STOPDT_CONFIRM;
+            result.InitHeader(STOPDT_CONFIRM);
             break;
         case TESTFR_REQUEST:
-            mType = TESTFR_CONFIRM;
+            result.InitHeader(TESTFR_CONFIRM);
             break;
+
         default:
             break;
         }
-        mHeader.mControl[0] = mType;
+
+        return result;
     }
 
     std::string Apdu::TypeToString() const
@@ -199,7 +219,7 @@ namespace IEC104
         }
     }
 
-    void Apdu::SetType(MessageType aType) noexcept
+    void Apdu::InitHeader(MessageType aType) noexcept
     {
         mType = aType;
 
@@ -286,7 +306,7 @@ namespace IEC104
     {
         if (aReceiveCounter <= MAX_SEQUENCE)
         {
-            SetType(RECEIVE_CONFIRM);
+            InitHeader(RECEIVE_CONFIRM);
             SetReceiveCounter(aReceiveCounter);
         }
     }

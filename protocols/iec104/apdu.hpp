@@ -41,6 +41,9 @@ namespace IEC104
 
         explicit Apdu() noexcept;
         Apdu(const uint8_t* apData, size_t aSize) noexcept;
+        Apdu(const Apdu& arOther);
+        Apdu(Apdu&& arOther) noexcept;
+
         ~Apdu();
 
         void ReadFrom(ByteStream& arSource);
@@ -64,7 +67,7 @@ namespace IEC104
         const Asdu* GetAsdu() const noexcept;
 
         bool NeedsConfirmation() const noexcept;
-        void ConvertToConfirmation() noexcept;
+        Apdu CreateConfirmation() const noexcept;
 
         std::string TypeToString() const;
 
@@ -85,7 +88,7 @@ namespace IEC104
             TESTFR_CONFIRM = 0x83,
         };
 
-        void SetType(MessageType aType) noexcept;
+        void InitHeader(MessageType aType) noexcept;
 
     private:
         struct Header
