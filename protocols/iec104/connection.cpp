@@ -112,7 +112,6 @@ namespace IEC104
         if (arReceived.NeedsConfirmation())
         {
             ConfirmService(arReceived);
-        
         }
         else if (arReceived.HasAsdu())
         {
