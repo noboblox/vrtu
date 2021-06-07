@@ -88,8 +88,29 @@ namespace IEC104
         void SetType(MessageType aType) noexcept;
 
     private:
-        int ReadSequenceInternal(const uint8_t* apBegin) const noexcept;
-        void WriteSequenceInternal(uint8_t* apBegin, int aValue) noexcept;
+
+        /**
+         * @brief Read the sequence number from an APDU
+         * 
+         * The IEC104 sequence encoding stores 15 bit values
+         * The bit 0 of the lower byte is not used for sequencing, because it's needed for message identification
+         *            7  6  5  4  3  2  1  0
+         * apSource[0] X  X  X  X  X  X  X  0  <-- least significant bit @ 1
+         * apSource[1] X  X  X  X  X  X  X  X  <-- most  significant bit @ 7
+
+         * 
+         * @param[in] apSource Pointer to first byte of the evaluated sequence number
+         * @return Sequence number
+        */
+        int ReadSequenceInternal(const uint8_t* apSource) const noexcept;
+
+        /**
+         * @brief Write the sequence number into an APDU
+         * 
+         * @param [in/out] apDestination Pointer to first byte of destination
+         * @param [in] aValue Value to set
+        */
+        void WriteSequenceInternal(uint8_t* apDestination, int aValue) noexcept;
         MessageType VerifyMessage() noexcept;
 
         MessageType mType;
