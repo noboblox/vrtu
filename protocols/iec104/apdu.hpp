@@ -72,20 +72,30 @@ namespace IEC104
         std::string TypeToString() const;
 
     protected:
+
+        /**
+         * @brief MessageType with native encoding for IEC 60870-5-104
+         */
         enum MessageType
         {
             INVALID = -1,
 
-            DATA = 0,
+            DATA            = 0x00, //!< Type I (Type mask 0x00)
 
-            RECEIVE_CONFIRM = 0x01,
+            RECEIVE_CONFIRM = 0x01, //!< Type S (Type mask 0x01)
 
+            /**
+             * Type U (Type mask 0x03)
+             * Bit   |  7     6  |  5     4  |  3     2  | 1     0 |
+             *       |  TESTFR   |  STOPDT   |  STARTDT  | Type U  |
+             *       | con | act | con | act | con | act | 1  |  1 |
+             */
             STARTDT_REQUEST = 0x07,
             STARTDT_CONFIRM = 0x0B,
-            STOPDT_REQUEST = 0x13,
-            STOPDT_CONFIRM = 0x23,
-            TESTFR_REQUEST = 0x43,
-            TESTFR_CONFIRM = 0x83,
+            STOPDT_REQUEST  = 0x13,
+            STOPDT_CONFIRM  = 0x23,
+            TESTFR_REQUEST  = 0x43,
+            TESTFR_CONFIRM  = 0x83
         };
 
         void InitHeader(MessageType aType) noexcept;
@@ -93,9 +103,9 @@ namespace IEC104
     private:
         struct Header
         {
-            uint8_t mStartByte;
-            uint8_t mSize;
-            uint8_t mControl[4];
+            uint8_t mStartByte;  //!< Startbyte 0x68
+            uint8_t mSize;       //!< Message size excluding mStartByte and mSize itself. At least sizeof(mControl).
+            uint8_t mControl[4]; //!< Encoding defined by IEC 60870-5-104
         };
 
         /**
