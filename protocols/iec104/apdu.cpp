@@ -227,26 +227,7 @@ namespace IEC104
         mHeader.mSize = 0x04;
         std::memset(mHeader.mControl, 0, 4);
 
-        switch (aType)
-        {
-            break;
-
-        case RECEIVE_CONFIRM:
-            mHeader.mControl[0] = 0x01;
-            break;
-
-        case STARTDT_REQUEST:
-        case STARTDT_CONFIRM:
-        case STOPDT_REQUEST:
-        case STOPDT_CONFIRM:
-        case TESTFR_REQUEST:
-        case TESTFR_CONFIRM:
-            mHeader.mControl[0] = static_cast<uint8_t>(aType);
-            break;
-
-        default:
-            break;
-        };
+        mHeader.mControl[0] = static_cast<uint8_t>(aType);
     }
 
     int Apdu::ReadSequenceInternal(const uint8_t* apBegin) const noexcept
