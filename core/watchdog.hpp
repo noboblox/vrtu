@@ -12,20 +12,35 @@ namespace CORE
     public:
         explicit Watchdog(boost::asio::io_context& arContext,
             const boost::posix_time::time_duration& arTimeout) noexcept
-            : mTimer(arContext), mTimeout(arTimeout)
+            : mTimer(arContext), mTimeout(arTimeout), mIsRunning(false)
         {
         }
 
         void Start()
         {
             mTimer.expires_from_now(mTimeout);
+
+            mIsRunning = true;
             mTimer.async_wait([this](const boost::system::error_code& arError)
                 {
                     if (!arError) // not cancelled
                     {
                         this->SignalTimeout();
                     }
+
+                    mIsRunning = false;
                 });
+        }
+
+        void StartOrContinue()
+        {
+            if (!IsRunning())
+                Start();
+        }
+
+        bool IsRunning() const noexcept
+        {
+            return mIsRunning;
         }
 
         void Restart()
@@ -45,6 +60,7 @@ namespace CORE
     private:
         boost::asio::deadline_timer mTimer;
         boost::posix_time::time_duration mTimeout;
+        bool mIsRunning;
     };
 }
 

@@ -35,7 +35,7 @@ namespace IEC104
             if (mNextReceiveId == arReceived.GetSendCounter())
             {
                 IEC104::Apdu::IncrementSequence(mNextReceiveId);
-                mAsduConfirmationTrigger.Start();
+                mAsduConfirmationTrigger.StartOrContinue();
             }
             else
                 success = false;
