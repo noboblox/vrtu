@@ -23,10 +23,7 @@ namespace IEC104
         mConfig(arConfig),
         mAsduConfirmationTrigger(mrContext, boost::posix_time::seconds(mConfig.GetT2()))
     {
-        mAsduConfirmationTrigger.SignalTimeout.Register([this]()
-        {
-            this->ConfirmReceivedAsdus();
-        });
+        mAsduConfirmationTrigger.SignalTimeout.Register([this] () { this->ConfirmReceivedAsdus(); });
     }
 
     bool Connection::HandleSequences(const IEC104::Apdu& arReceived)
