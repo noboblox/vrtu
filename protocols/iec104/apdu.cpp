@@ -157,9 +157,12 @@ namespace IEC104
         return false;
     }
 
-    const Asdu* Apdu::GetAsdu() const noexcept 
+    const Asdu& Apdu::GetAsdu() const
     {
-        return mpAsdu.get(); 
+        if (!mpAsdu)
+            throw std::invalid_argument("ASDU is not available");
+
+        return *mpAsdu.get(); 
     }
 
 

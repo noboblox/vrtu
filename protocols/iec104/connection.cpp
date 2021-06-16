@@ -10,12 +10,15 @@
 namespace IEC104
 {
 
-    Connection::Connection(boost::asio::ip::tcp::socket&& arSocket, const std::function<void(Connection&)>& arClosedHandler)
+    Connection::Connection(boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+                           const std::function<void(Connection&)>& arClosedHandler)
         : mSocket(std::move(arSocket)),
         ClosedHandler(arClosedHandler),
         mReadBuffer(), mWriteBuffer(),
         mCurrentSize(0),
-        mNextReceiveId(0), mNextSendId(0), mLastAcknoledgedId(0)
+        mNextReceiveId(0), mNextSendId(0),
+        mLastConfirmedByLocal(0), mLastConfirmedByRemote(0),
+        mConfig(arConfig)
     {
     }
 
@@ -33,19 +36,29 @@ namespace IEC104
 
         if (arReceived.HasReceiveCounter())
         {
-            mLastAcknoledgedId = arReceived.GetReceiveCounter();
+            mLastConfirmedByRemote = arReceived.GetReceiveCounter();
         }
         return success;
     }
 
-    bool Connection::AcknowledgeReceivedAsdus()
+    bool Connection::IsAsduConfirmThresholdReached() const noexcept
+    {
+        return Apdu::SequenceDistance(mLastConfirmedByLocal, mNextReceiveId) >= mConfig.GetW();
+    }
+
+    bool Connection::ConfirmReceivedAsdus()
     {
         AsduAcknowledgeApdu send(mNextReceiveId);
         boost::system::error_code ec;
         PrintMessage(send, true);
 
         boost::asio::write(mSocket, boost::asio::buffer(send.GetData(), IEC104::Apdu::GetHeaderSize()), ec);
-        return !ec.failed();
+
+        if (ec)
+            return false;
+
+        mLastConfirmedByLocal = mNextReceiveId;
+        return true;
     }
 
     void Connection::ReceiveNextMessage()
@@ -95,6 +108,8 @@ namespace IEC104
 
         PrintMessage(mReceived, false);
         RespondTo(mReceived);
+        DeployMessage(mReceived);
+
         return true;
     }
 
@@ -113,9 +128,17 @@ namespace IEC104
         {
             ConfirmService(arReceived);
         }
-        else if (arReceived.IsAsdu())
+        else if (IsAsduConfirmThresholdReached())
         {
-            AcknowledgeReceivedAsdus();
+            ConfirmReceivedAsdus();
+        }
+    }
+
+    void Connection::DeployMessage(const Apdu& arReceived)
+    {
+        if (arReceived.IsAsdu())
+        {
+            //TODO SignalAsdu(arReceived.GetAsdu());
         }
     }
 

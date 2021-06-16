@@ -8,6 +8,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "protocols/iec104/apdu.hpp"
+#include "protocols/iec104/connectionconfig.hpp"
 
 namespace IEC104
 {
@@ -15,7 +16,8 @@ namespace IEC104
     {
     public:
         // Create an connection with an connected socket
-        explicit Connection(boost::asio::ip::tcp::socket&& arSocket, const std::function<void(Connection&)>& arClosedHandler);
+        explicit Connection(boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+                            const std::function<void(Connection&)>& arClosedHandler);
         ~Connection();
 
         // Start message processing 
@@ -37,15 +39,16 @@ namespace IEC104
         // Decode the message and respond confirmations
         bool ProcessMessage();
         void RespondTo(const Apdu& arReceived);
+        void DeployMessage(const Apdu& arReceived);
 
         // Print the message on screen
         void PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend);
 
         // Verify that a message is expected and update sequence counters
         bool HandleSequences(const IEC104::Apdu& arReceived);
+        bool IsAsduConfirmThresholdReached() const noexcept;
         
-        // Acknowlegde received messages
-        bool AcknowledgeReceivedAsdus();
+        bool ConfirmReceivedAsdus();
         void ConfirmService(const Apdu& arReceived);
 
         // Close the connection with an error message
@@ -57,8 +60,10 @@ namespace IEC104
         std::function<void(Connection&)> ClosedHandler;
         std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
         size_t mCurrentSize;
-        int mNextReceiveId, mNextSendId, mLastAcknoledgedId;
+        int mNextReceiveId, mNextSendId;
+        int mLastConfirmedByLocal, mLastConfirmedByRemote;
         Apdu mReceived;
+        ConnectionConfig mConfig;
     };
 }
 

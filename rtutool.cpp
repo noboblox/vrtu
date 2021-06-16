@@ -8,7 +8,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "protocols/iec104/connection.hpp"
-
+#include "protocols/iec104/connectionconfig.hpp"
 
 namespace IP = boost::asio::ip;
 
@@ -43,7 +43,7 @@ namespace IEC104
         {
             if (!aError)
             {
-                mConnections.emplace_back(new Connection(std::move(arNewSocket), [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
+                mConnections.emplace_back(new Connection(std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
                 (*mConnections.rbegin())->Start();
                 StartAccept();
             }

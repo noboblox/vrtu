@@ -64,7 +64,7 @@ namespace IEC104
 
         size_t GetAsduSize() const noexcept;
         bool IsAsdu() const noexcept;
-        const Asdu* GetAsdu() const noexcept;
+        const Asdu& GetAsdu() const;
 
         bool IsServiceRequest() const noexcept;
         Apdu CreateServiceConfirmation() const noexcept;
