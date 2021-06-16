@@ -43,7 +43,7 @@ namespace IEC104
         {
             if (!aError)
             {
-                mConnections.emplace_back(new Connection(std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
+                mConnections.emplace_back(new Connection(mrContext, std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
                 (*mConnections.rbegin())->Start();
                 StartAccept();
             }

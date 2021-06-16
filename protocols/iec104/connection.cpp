@@ -10,16 +10,23 @@
 namespace IEC104
 {
 
-    Connection::Connection(boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+    Connection::Connection(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
                            const std::function<void(Connection&)>& arClosedHandler)
-        : mSocket(std::move(arSocket)),
+        : 
+        mrContext(arContext),
+        mSocket(std::move(arSocket)),
         ClosedHandler(arClosedHandler),
         mReadBuffer(), mWriteBuffer(),
         mCurrentSize(0),
         mNextReceiveId(0), mNextSendId(0),
         mLastConfirmedByLocal(0), mLastConfirmedByRemote(0),
-        mConfig(arConfig)
+        mConfig(arConfig),
+        mAsduConfirmationTrigger(mrContext, boost::posix_time::seconds(mConfig.GetT2()))
     {
+        mAsduConfirmationTrigger.SignalTimeout.Register([this]()
+        {
+            this->ConfirmReceivedAsdus();
+        });
     }
 
     bool Connection::HandleSequences(const IEC104::Apdu& arReceived)
@@ -29,7 +36,10 @@ namespace IEC104
         if (arReceived.HasSendCounter())
         {
             if (mNextReceiveId == arReceived.GetSendCounter())
+            {
                 IEC104::Apdu::IncrementSequence(mNextReceiveId);
+                mAsduConfirmationTrigger.Start();
+            }
             else
                 success = false;
         }
@@ -58,6 +68,8 @@ namespace IEC104
             return false;
 
         mLastConfirmedByLocal = mNextReceiveId;
+        mAsduConfirmationTrigger.Stop();
+
         return true;
     }
 

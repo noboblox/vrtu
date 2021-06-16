@@ -7,6 +7,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include "core/watchdog.hpp"
 #include "protocols/iec104/apdu.hpp"
 #include "protocols/iec104/connectionconfig.hpp"
 
@@ -16,12 +17,14 @@ namespace IEC104
     {
     public:
         // Create an connection with an connected socket
-        explicit Connection(boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+        explicit Connection(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
                             const std::function<void(Connection&)>& arClosedHandler);
         ~Connection();
 
         // Start message processing 
         void Start();
+
+        bool ConfirmReceivedAsdus();
 
     private:
         // Start an async read of the next APDU -> ReadPartial()
@@ -48,7 +51,6 @@ namespace IEC104
         bool HandleSequences(const IEC104::Apdu& arReceived);
         bool IsAsduConfirmThresholdReached() const noexcept;
         
-        bool ConfirmReceivedAsdus();
         void ConfirmService(const Apdu& arReceived);
 
         // Close the connection with an error message
@@ -56,6 +58,7 @@ namespace IEC104
 
 
     private:
+        boost::asio::io_context& mrContext;
         boost::asio::ip::tcp::socket mSocket;
         std::function<void(Connection&)> ClosedHandler;
         std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
@@ -64,6 +67,7 @@ namespace IEC104
         int mLastConfirmedByLocal, mLastConfirmedByRemote;
         Apdu mReceived;
         ConnectionConfig mConfig;
+        CORE::Watchdog mAsduConfirmationTrigger;
     };
 }
 
