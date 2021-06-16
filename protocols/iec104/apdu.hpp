@@ -137,10 +137,10 @@ namespace IEC104
         std::unique_ptr<Asdu> mpAsdu;
     };
 
-    class ReceiveConfirmation : public Apdu
+    class AsduAcknowledgeApdu : public Apdu
     {
     public:
-        explicit ReceiveConfirmation(int aReceiveCounter);
+        explicit AsduAcknowledgeApdu(int aReceiveCounter);
     };
 }
 

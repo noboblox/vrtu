@@ -282,7 +282,7 @@ namespace IEC104
         }
     }
 
-    ReceiveConfirmation::ReceiveConfirmation(int aReceiveCounter)
+    AsduAcknowledgeApdu::AsduAcknowledgeApdu(int aReceiveCounter)
         : Apdu()
     {
         if (aReceiveCounter <= MAX_SEQUENCE)

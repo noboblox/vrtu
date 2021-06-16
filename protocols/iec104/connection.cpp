@@ -40,7 +40,7 @@ namespace IEC104
 
     bool Connection::AcknowledgeReceivedAsdus()
     {
-        ReceiveConfirmation send(mNextReceiveId);
+        AsduAcknowledgeApdu send(mNextReceiveId);
         boost::system::error_code ec;
         PrintMessage(send, true);
 
