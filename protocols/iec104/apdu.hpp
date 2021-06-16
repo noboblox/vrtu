@@ -63,11 +63,11 @@ namespace IEC104
         bool ReadAsdu(ByteStream& arInput) noexcept;
 
         size_t GetAsduSize() const noexcept;
-        bool HasAsdu() const noexcept;
+        bool IsAsdu() const noexcept;
         const Asdu* GetAsdu() const noexcept;
 
-        bool NeedsConfirmation() const noexcept;
-        Apdu CreateConfirmation() const noexcept;
+        bool IsServiceRequest() const noexcept;
+        Apdu CreateServiceConfirmation() const noexcept;
 
         std::string TypeToString() const;
 

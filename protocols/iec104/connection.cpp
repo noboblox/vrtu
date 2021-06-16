@@ -100,7 +100,7 @@ namespace IEC104
 
     void Connection::ConfirmService(const Apdu& arReceived)
     {
-        const Apdu confirmation = arReceived.CreateConfirmation();
+        const Apdu confirmation = arReceived.CreateServiceConfirmation();
         PrintMessage(confirmation, true);
         boost::asio::write(mSocket,
             boost::asio::buffer(confirmation.GetData(), confirmation.GetHeaderSize()));
@@ -109,11 +109,11 @@ namespace IEC104
 
     void Connection::RespondTo(const Apdu& arReceived)
     {
-        if (arReceived.NeedsConfirmation())
+        if (arReceived.IsServiceRequest())
         {
             ConfirmService(arReceived);
         }
-        else if (arReceived.HasAsdu())
+        else if (arReceived.IsAsdu())
         {
             AcknowledgeReceivedAsdus();
         }

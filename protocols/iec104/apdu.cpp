@@ -87,14 +87,14 @@ namespace IEC104
         return mType != INVALID; 
     }
 
-    bool Apdu::HasAsdu() const noexcept 
+    bool Apdu::IsAsdu() const noexcept 
     {
         return mType == DATA; 
     }
 
     size_t Apdu::GetAsduSize() const noexcept 
     {
-        return HasAsdu() ? (mHeader.mSize - 4) : 0; 
+        return IsAsdu() ? (mHeader.mSize - 4) : 0; 
     }
 
     bool Apdu::HasReceiveCounter() const noexcept 
@@ -163,14 +163,14 @@ namespace IEC104
     }
 
 
-    bool Apdu::NeedsConfirmation() const noexcept
+    bool Apdu::IsServiceRequest() const noexcept
     {
         return (mType == STARTDT_REQUEST) ||
                (mType == STOPDT_REQUEST) ||
                (mType == TESTFR_REQUEST);
     }
 
-    Apdu Apdu::CreateConfirmation() const noexcept
+    Apdu Apdu::CreateServiceConfirmation() const noexcept
     {
         Apdu result;
 
