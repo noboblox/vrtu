@@ -21,10 +21,8 @@ namespace IEC104
         // Needs at least a fully received header @see GetHeaderSize()
         static size_t GetMessageSize(const void* apHeader) noexcept
         {
-            // 1. IEC104 stores the message size at the 2nd inside the message (offset 1)
-            // 2. IEC104 does not count the first 2 bytes into the size (+ 2 needed).
-
-            return reinterpret_cast<const uint8_t*>(apHeader)[1] + 2;
+            // IEC104 does not count the first 2 bytes into the message size -> needs to be added here
+            return reinterpret_cast<const Header*>(apHeader)->mSize + 2;
         }
 
         static constexpr int MAX_SEQUENCE = 0x7FFF;
