@@ -24,7 +24,10 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
+      
+      - name: Install boost
+        run: sudo apt install libboost-all-dev
+        
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build
 
