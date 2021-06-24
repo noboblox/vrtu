@@ -21,7 +21,7 @@ public:
     void AppendLine(std::string&& arMsg);
     void ClearLines() noexcept;
 
-    virtual char const* what() const;
+    virtual char const* what() const noexcept;
 
     /**
      * Print the error message directly to output stream

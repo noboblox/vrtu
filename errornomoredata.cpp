@@ -37,12 +37,20 @@ void ErrorNoMoreData::ClearLines() noexcept
     mMsgLines.clear(); 
 }
 
-char const* ErrorNoMoreData::what() const
+char const* ErrorNoMoreData::what() const noexcept
 {
-    std::stringstream result;
-    PrintError(result);
-    mWhat = result.str();
-    return mWhat.c_str();
+    try
+    {
+        std::stringstream result;
+        PrintError(result);
+        mWhat = result.str();
+        return mWhat.c_str();
+    }
+    catch (...) 
+    {
+        static constexpr const char LAST_RESORT[] = "Error during error handling.";
+        return LAST_RESORT;
+    }
 }
 
 std::ostream& ErrorNoMoreData::PrintError(std::ostream & arOutput) const
