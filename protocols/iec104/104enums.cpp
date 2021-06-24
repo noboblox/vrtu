@@ -1,5 +1,6 @@
 #include "protocols/iec104/104enums.hpp"
 
+template <>
 IEC104::DoublePointEnum::DefinitionContainer IEC104::DoublePointEnum::msDefinition = {
         IEC104::DoublePointEnum::Definition(IEC104::DoublePoint::INTERMEDIATE, "intermediate"),
         IEC104::DoublePointEnum::Definition(IEC104::DoublePoint::OFF,          "off"),
@@ -7,6 +8,7 @@ IEC104::DoublePointEnum::DefinitionContainer IEC104::DoublePointEnum::msDefiniti
         IEC104::DoublePointEnum::Definition(IEC104::DoublePoint::FAULTY,       "faulty")
 };
 
+template <>
 IEC104::ReasonCodeEnum::DefinitionContainer IEC104::ReasonCodeEnum::msDefinition = {
         IEC104::ReasonCodeEnum::Definition(IEC104::ReasonCode::PERIODIC                      ,"periodic"),
         IEC104::ReasonCodeEnum::Definition(IEC104::ReasonCode::BACKGROUND_SCAN               ,"background scan"),
@@ -73,6 +75,7 @@ IEC104::ReasonCodeEnum::DefinitionContainer IEC104::ReasonCodeEnum::msDefinition
         IEC104::ReasonCodeEnum::Definition(IEC104::ReasonCode::CUSTOM_CODE_63                ,"custom reason 63")
 };
 
+template<>
 IEC104::TypeEnum::DefinitionContainer IEC104::TypeEnum::msDefinition = {
     IEC104::TypeEnum::Definition(IEC104::Type::M_SP_NA_1, "M_SP_NA_1"),
     IEC104::TypeEnum::Definition(IEC104::Type::M_SP_TA_1, "M_SP_TA_1"),
