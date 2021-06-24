@@ -42,3 +42,8 @@ add_executable(rtutool
 )
 
 target_link_libraries(rtutool ${Boost_LIBRARIES})
+
+if (NOT WIN32)
+    target_link_libraries(rtutool pthread)
+endif()
+
