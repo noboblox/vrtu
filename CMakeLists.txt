@@ -12,9 +12,6 @@ find_package(Boost
              date_time
              system)
 
-include_directories(${PROJECT_SOURCE_DIR} 
-                    ${Boost_INCLUDE_DIRS})
-
 # TODO: For now just compile everything into one application
 # For real use it needs to be restructured into a library, but symbol exports are currently missing
 
@@ -40,6 +37,10 @@ add_executable(rtutool
 
                protocols/iec104/register_iec104.cpp
 )
+
+target_include_directories(rtutool PRIVATE
+                           ${PROJECT_SOURCE_DIR} 
+                           ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(rtutool ${Boost_LIBRARIES})
 
