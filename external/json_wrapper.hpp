@@ -77,20 +77,6 @@ namespace JSON
             throw std::invalid_argument("No template-specialization for type. This is a compile-time problem");
         }
 
-        template<> void inline Set<int8_t>(const int8_t& arValue)     { SetInt(arValue); }
-        template<> void inline Set<int16_t>(const int16_t& arValue)   { SetInt(arValue); }
-        template<> void inline Set<int32_t>(const int32_t& arValue)   { SetInt(arValue); }
-        template<> void inline Set<int64_t>(const int64_t& arValue)   { SetInt(arValue); }
-        template<> void inline Set<uint8_t>(const uint8_t& arValue)   { SetInt(arValue); }
-        template<> void inline Set<uint16_t>(const uint16_t& arValue) { SetInt(arValue); }
-        template<> void inline Set<uint32_t>(const uint32_t& arValue) { SetInt(arValue); }
-        template<> void inline Set<uint64_t>(const uint64_t& arValue) { SetInt(arValue); }
-        template<> void inline Set<float>(const float& arValue)       { SetFloat(arValue); }
-        template<> void inline Set<double>(const double& arValue)     { SetFloat(arValue); }
-        template<> void inline Set<bool>(const bool& arValue)         { SetBool(arValue); }
-        template<> void inline Set<nullptr_t>(const nullptr_t&)       { SetNull(); }
-        template<> void inline Set<std::string>(const std::string& arValue) { SetString(arValue); }
-
         void SetInt(int aValue);
         void SetInt(intmax_t aValue);
         void SetInt(unsigned aValue);
@@ -111,6 +97,20 @@ namespace JSON
         ValueHandle();
         uint8_t mImpl[16]; // Opague implementation object is stored in place
     };
+
+    template<> void inline ValueHandle::Set<int8_t>(const int8_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<int16_t>(const int16_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<int32_t>(const int32_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<int64_t>(const int64_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<uint8_t>(const uint8_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<uint16_t>(const uint16_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<uint32_t>(const uint32_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<uint64_t>(const uint64_t& arValue) { SetInt(arValue); }
+    template<> void inline ValueHandle::Set<float>(const float& arValue) { SetFloat(arValue); }
+    template<> void inline ValueHandle::Set<double>(const double& arValue) { SetFloat(arValue); }
+    template<> void inline ValueHandle::Set<bool>(const bool& arValue) { SetBool(arValue); }
+    template<> void inline ValueHandle::Set<nullptr_t>(const nullptr_t&) { SetNull(); }
+    template<> void inline ValueHandle::Set<std::string>(const std::string& arValue) { SetString(arValue); }
 }
 
 #endif
