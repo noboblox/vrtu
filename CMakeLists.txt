@@ -6,7 +6,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
-set(Boost_USE_MULTITHREADED, OFF)
 
 find_package(Boost 
              REQUIRED COMPONENTS
