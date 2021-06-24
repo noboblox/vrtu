@@ -27,7 +27,7 @@ namespace IEC104
         uint8_t GetEncoded() const noexcept { return mFlags; }
 
         bool IsGood() const { return mFlags == 0; }
-        bool ClearAllFlags() { mFlags = 0; }
+        void ClearAllFlags() { mFlags = 0; }
 
         void SetInvalid(bool aState) { aState ? mFlags |= FLAG_INVALID : mFlags &= (~FLAG_INVALID); }
         bool IsInvalid() const { return mFlags & FLAG_INVALID; }

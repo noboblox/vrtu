@@ -1,5 +1,6 @@
 #include "errorunknowntype.hpp"
 
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -32,12 +33,19 @@ namespace IEC104
         mErrorSource = arData.GetPath();
     }
 
-    char const* ErrorUnknownType::what() const
+    char const* ErrorUnknownType::what() const noexcept
     {
-        std::stringstream result;
-        PrintError(result);
-        mWhat = result.str();
-        return mWhat.c_str();
+        try
+        {
+            std::stringstream result;
+            PrintError(result);
+            mWhat = result.str();
+            return mWhat.c_str();
+        }
+        catch (...) 
+        {
+            return "Error during error handling";
+        }
     }
 
     std::ostream& ErrorUnknownType::PrintError(std::ostream& arOutput) const

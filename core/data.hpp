@@ -1,6 +1,7 @@
 #ifndef DATA_HPP_
 #define DATA_HPP_
 
+#include <algorithm>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>

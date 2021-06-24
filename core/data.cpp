@@ -1,6 +1,5 @@
 #include "core/data.hpp"
 
-#include <algorithm>
 #include <ostream>
 
 BaseData::BaseData(const std::string& arName) noexcept

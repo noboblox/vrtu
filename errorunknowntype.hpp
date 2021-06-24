@@ -24,7 +24,7 @@ namespace IEC104
         /// Set a BaseData element responsible for the error
         void SetErrorSource(const BaseData& arData);
 
-        virtual char const* what() const;
+        virtual char const* what() const noexcept;
 
         std::ostream& PrintError(std::ostream& arOutput) const;
 

@@ -48,8 +48,7 @@ char const* ErrorNoMoreData::what() const noexcept
     }
     catch (...) 
     {
-        static constexpr const char LAST_RESORT[] = "Error during error handling.";
-        return LAST_RESORT;
+        return "Error during error handling";
     }
 }
 

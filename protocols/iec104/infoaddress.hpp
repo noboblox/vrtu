@@ -34,14 +34,14 @@ namespace IEC104
         }
 
         // Construct 2-byte IOA
-        constexpr InfoAddress(uint8_t aLowByte, uint8_t aHighByte) noexcept
+        InfoAddress(uint8_t aLowByte, uint8_t aHighByte) noexcept
             : mValue(aLowByte), mSize(2)
         {
             mValue |= (aHighByte << 8);
         }
 
         // Construct 3-byte IOA
-        constexpr InfoAddress(uint8_t aLowByte, uint8_t aMediumByte, uint8_t aHighByte) noexcept
+        InfoAddress(uint8_t aLowByte, uint8_t aMediumByte, uint8_t aHighByte) noexcept
             : mValue(aLowByte), mSize(3)
         {
             mValue |= (aMediumByte << 8);
