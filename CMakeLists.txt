@@ -19,7 +19,10 @@ include_directories(${PROJECT_SOURCE_DIR}
 # For real use it needs to be restructured into a library, but symbol exports are currently missing
 
 add_executable(rtutool 
-               rtutool.cpp errornomoredata.cpp errorunknowntype.cpp
+               rtutool.cpp 
+               
+               errornomoredata.cpp 
+               errorunknowntype.cpp
 
                core/data.cpp
 
