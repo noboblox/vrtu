@@ -16,8 +16,8 @@ ErrorNoMoreData::ErrorNoMoreData(const ByteStream& arBuffer)
 {
     if (mBufferSize != 0)
     {
-        mContextSize = std::min(std::distance(arBuffer.Begin(), arBuffer.End()),
-                           static_cast<int> (sizeof(mContext)));
+        mContextSize = std::min(static_cast<size_t> (std::distance(arBuffer.Begin(), arBuffer.End())),
+                                sizeof(mContext));
 
         std::memcpy(mContext, arBuffer.End() - mContextSize, mContextSize);
     }
