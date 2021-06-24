@@ -43,7 +43,15 @@ add_executable(rtutool
 
 target_link_libraries(rtutool ${Boost_LIBRARIES})
 
+# on unix systems boost has a dependency to pthread
 if (NOT WIN32)
     target_link_libraries(rtutool pthread)
+endif()
+
+# enable warnings
+if(MSVC)
+  target_compile_options(rtutool PRIVATE /W4)
+else()
+  target_compile_options(rtutool PRIVATE -Wall -Wextra -pedantic)
 endif()
 
