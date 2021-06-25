@@ -13,9 +13,11 @@ find_package(Boost
              system)
 
 # TODO: For now just compile everything into one application
-# For real use it needs to be restructured into a library, but symbol exports are currently missing
+# For real use it needs to be restructured into a library, but symbol exports are currently missing 
 
 add_executable(rtutool 
+
+               # sources (mandatory for compile)
                rtutool.cpp 
                
                errornomoredata.cpp 
@@ -36,6 +38,32 @@ add_executable(rtutool
                protocols/iec104/infoobjects.cpp
 
                protocols/iec104/register_iec104.cpp
+
+               # headers (for proper display inside all IDEs)
+               errordecode.hpp
+               errornomoredata.hpp
+               errorunknowntype.hpp
+               rtutool.hpp
+
+               core/bytestream.hpp
+               core/data.hpp
+               core/namedenum.hpp
+               core/signal.hpp
+               core/util.hpp
+               core/watchdog.hpp
+
+               external/json_wrapper.hpp
+               external/style.hpp
+
+               protocols/iec104/104enums.hpp
+               protocols/iec104/apdu.hpp
+               protocols/iec104/asdu.hpp
+               protocols/iec104/connection.hpp
+               protocols/iec104/data104.hpp
+               protocols/iec104/infoaddress.hpp
+               protocols/iec104/infoobjects.hpp
+               protocols/iec104/quality.hpp
+               protocols/iec104/reason.hpp
 )
 
 target_include_directories(rtutool PRIVATE
