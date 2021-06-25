@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <iosfwd>
+#include <iterator>
 #include <memory>
 #include <vector>
 
@@ -77,6 +78,37 @@ template <typename DATA>
 class DataArray : public BaseData
 {
 public:
+    using Container = std::vector<std::shared_ptr<DATA>>;
+
+    class Iterator
+    {
+    public:
+        explicit Iterator(typename Container::const_iterator& arSource)
+            : mIter(arSource) {}
+
+        Iterator& operator++() noexcept
+        {
+            ++mIter;
+            return *this;
+        }
+
+        Iterator  operator++(int) noexcept
+        {
+            Iterator old(*this);
+            operator++();
+            return old;
+        }
+
+        bool operator==(const Iterator& arOther) const noexcept { return mIter == arOther.mIter; }
+        bool operator!=(const Iterator& arOther) const noexcept { return !(this->operator==(arOther)); }
+
+        DATA& operator*() noexcept { return **mIter; }
+        DATA* operator->() noexcept { return mIter->get(); }
+
+    private:
+        typename Container::const_iterator mIter;
+    };
+
     explicit DataArray(const std::string& arName) noexcept
         : BaseData(arName) {}
 
@@ -99,6 +131,9 @@ public:
     const DATA& Get(size_t aIndex) const { return *(mData.at(aIndex)); }
     size_t GetSize() const noexcept { return mData.size(); }
     bool IsEmpty() const noexcept { return mData.empty(); }
+
+    Iterator Begin() const { return Iterator(mData.begin()); }
+    Iterator End() const { return Iterator(mData.end()); }
 
     void WriteJson(JSON::ValueHandle& arHandle) const override
     {
@@ -129,7 +164,7 @@ public:
     }
 
 private:
-    std::vector<std::shared_ptr<DATA>> mData;
+    Container mData;
 };
 
 /*

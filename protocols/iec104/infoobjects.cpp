@@ -55,10 +55,11 @@ namespace IEC104
         return msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY)) != msRegistered.cend();
     }
 
-    BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId)
+    BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId, DataQuality* apQuality)
         : DataStruct(arName),
           mType(*this, "type"),
-          mAddress(*this, "ioa")
+          mAddress(*this, "ioa"),
+          mpQuality(apQuality)
     {
         mType = TypeEnum(static_cast<IEC104::Type>(aTypeId));
     }
@@ -97,15 +98,36 @@ namespace IEC104
         }
     }
 
-    void BaseInfoObject::RequireNull(int aChecked)
+    bool BaseInfoObject::HasQuality() const noexcept
+    {
+        return mpQuality != nullptr;
+    }
+
+    const Quality& BaseInfoObject::GetQuality() const
+    {
+        if (!HasQuality())
+            throw std::invalid_argument("InfoObject has no quality");
+        else if (!mpQuality->IsValid())
+            throw std::invalid_argument("The quality is not valid");
+
+        return **mpQuality;
+    }
+
+    void BaseInfoObject::RequireNull(int aChecked) const
     {
         if (aChecked)
             throw std::runtime_error("Found data where nothing was expected");
     }
 
+    void BaseInfoObject::RequireValid(const BaseData& arChecked) const
+    {
+        if (!arChecked.IsValid())
+            throw std::runtime_error("Data is not valid");
+    }
+
     // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
     DataSinglePoint::DataSinglePoint()
-        : BaseInfoObject("singlePoint", 1),
+        : BaseInfoObject("singlePoint", 1, &mQuality),
           mValue(*this, "value"),
           mQuality(*this, "quality")
     {
@@ -131,9 +153,17 @@ namespace IEC104
         arOutput.WriteByte(encoded);
     }
 
+    std::string DataSinglePoint::GetValueAsString() const
+    {
+        RequireValid(mValue);
+       
+        static constexpr const char* OUTPUT[] = {"false", "true"};
+        return OUTPUT[(*mValue) & 0x01];
+    }
+
     // Type 3: M_DP_NA_1 ////////////////////////////////////////////////////////////
     DataDoublePoint::DataDoublePoint()
-      : BaseInfoObject("doublePoint", 3),
+      : BaseInfoObject("doublePoint", 3, &mQuality),
         mValue(*this, "value"),
         mQuality(*this, "quality")
     {
@@ -160,9 +190,15 @@ namespace IEC104
         arOutput.WriteByte(encoded);
     }
 
+    std::string DataDoublePoint::GetValueAsString() const
+    {
+        RequireValid(mValue);
+        return (*mValue).GetLabel();
+    }
+
     // Type 11: M_ME_NB_1 ////////////////////////////////////////////////////////////
     DataMeasuredScaled::DataMeasuredScaled()
-        : BaseInfoObject("measuredScaled", 11),
+        : BaseInfoObject("measuredScaled", 11, &mQuality),
         mValue(*this, "value"),
         mQuality(*this, "quality")
     {
@@ -202,9 +238,15 @@ namespace IEC104
         arOutput.WriteByte((*mQuality).GetEncoded());
     }
 
+    std::string DataMeasuredScaled::GetValueAsString() const
+    {
+        RequireValid(mValue);
+        return std::to_string(*mValue);
+    }
+
     // Type 13: M_ME_NC_1 ////////////////////////////////////////////////////////////
     DataMeasuredFloat::DataMeasuredFloat()
-        : BaseInfoObject("measuredFloat", 13),
+        : BaseInfoObject("measuredFloat", 13, &mQuality),
         mValue(*this, "value"),
         mQuality(*this, "quality")
     {
@@ -250,5 +292,11 @@ namespace IEC104
         arOutput.WriteByte((bytes >> 24) & 0xFF);
 
         arOutput.WriteByte((*mQuality).GetEncoded());
+    }
+
+    std::string DataMeasuredFloat::GetValueAsString() const
+    {
+        RequireValid(mValue);
+        return std::to_string(*mValue);
     }
 }

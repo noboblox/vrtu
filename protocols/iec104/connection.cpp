@@ -6,6 +6,9 @@
 #include <boost/asio/write.hpp>
 
 #include "core/bytestream.hpp"
+#include "protocols/iec104/asdu.hpp"
+#include "protocols/iec104/infoobjects.hpp"
+
 
 namespace IEC104
 {
@@ -151,7 +154,7 @@ namespace IEC104
         }
     }
 
-    void Connection::PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend)
+    void Connection::PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend) const
     {
 
         std::cout << "[" << (aIsSend ? "--> " : "<-- ") << mSocket.remote_endpoint().address().to_string() << ":" << std::setw(5) << mSocket.remote_endpoint().port() << "]"
@@ -170,7 +173,37 @@ namespace IEC104
 
 
         std::cout << ", ASDU size = " << arMessage.GetAsduSize() << ";" << std::endl;
+
+        if (arMessage.IsAsdu())
+        {
+            PrintAsdu(arMessage.GetAsdu());
+            std::cout << std::endl;
+        }
+
     }
+
+    void Connection::PrintAsdu(const IEC104::Asdu& arAsdu) const
+    {
+        Asdu::Iterator it = arAsdu.Begin();
+
+        for (; it != arAsdu.End(); ++it)
+        {
+            PrintInfoObject(*it);
+        }
+
+    }
+
+    void Connection::PrintInfoObject(const BaseInfoObject& arInfoObject) const
+    {
+        static constexpr const char INTENDATION[] = "        ";
+
+        std::cout << INTENDATION 
+                  << "[" << std::setw(12) << arInfoObject.GetAddress().GetInt() << "] "
+                  << "value: " << std::setw(20) << arInfoObject.GetValueAsString() << ", ";
+
+        std::cout << std::endl;
+    }
+
     void Connection::Start()
     {
         std::cout << "Connected to " << mSocket.remote_endpoint().address().to_string() << ":" << mSocket.remote_endpoint().port() << std::endl;

@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "core/data.hpp"
 #include "protocols/iec104/104enums.hpp"
@@ -90,14 +91,16 @@ namespace IEC104
     class BaseInfoObject : public DataStruct
     {
     public:
-        // Standalone info object. Can be added to an ASDU via append
-        BaseInfoObject(const std::string& arName, int aTypeId);
-
         int GetTypeId() const;
         IEC104::InfoAddress GetAddress() const;
 
         virtual void ReadFrom(ByteStream& arInput, int aAddressSize);
         virtual void WriteTo(ByteStream& arOutput) const;
+
+        bool HasQuality() const noexcept;
+        const Quality& GetQuality() const;
+
+        virtual std::string GetValueAsString() const = 0;
 
         /*
          * Modification: Type is written only, if the object is a standalone object (without an ASDU)
@@ -105,11 +108,16 @@ namespace IEC104
         void WriteJson(JSON::ValueHandle& arValue) const override;
 
     protected:
-        void RequireNull(int aChecked);
+        // Standalone info object. Can be added to an ASDU via append
+        BaseInfoObject(const std::string& arName, int aTypeId, DataQuality* apQuality);
+
+        void RequireNull(int aChecked) const;
+        void RequireValid(const BaseData& arChecked) const;
 
     private:
         DataEnum<TypeEnum> mType;
         DataInfoAddress mAddress;
+        DataQuality* mpQuality;
     };
 
     // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
@@ -119,6 +127,7 @@ namespace IEC104
         DataSinglePoint();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
+        std::string GetValueAsString() const override;
 
     private:
         DataBool mValue;
@@ -132,6 +141,7 @@ namespace IEC104
         DataDoublePoint();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
+        std::string GetValueAsString() const override;
 
     private:
         DataEnum<DoublePointEnum> mValue;
@@ -145,6 +155,7 @@ namespace IEC104
         DataMeasuredScaled();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
+        std::string GetValueAsString() const override;
 
     private:
         DataInt mValue;
@@ -158,6 +169,7 @@ namespace IEC104
         DataMeasuredFloat();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
+        std::string GetValueAsString() const override;
 
     private:
         DataFloat mValue;

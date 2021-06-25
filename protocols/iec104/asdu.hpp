@@ -39,14 +39,20 @@ namespace IEC104
     class Asdu : public DataStruct
     {
     public:
+        using Iterator = DataArray<BaseInfoObject>::Iterator;
+
         Asdu(const AsduConfig& arConfig);
 
         void ReadFrom(ByteStream& arBuffer);
         void WriteTo(ByteStream& arBuffer) const;
 
+        Iterator Begin() const { return mObjects.Begin(); }
+        Iterator End()  const { return mObjects.End(); }
+
         // TODO
         bool HasMoreSpace() const;
         int Append(const SharedInfoObject& arInfoObj);
+
 
     private:
         void ReadHeader(ByteStream& arBuffer);

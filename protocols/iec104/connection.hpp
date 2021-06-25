@@ -13,6 +13,8 @@
 
 namespace IEC104
 {
+    class BaseInfoObject;
+
     class Connection
     {
     public:
@@ -45,7 +47,10 @@ namespace IEC104
         void DeployMessage(const Apdu& arReceived);
 
         // Print the message on screen
-        void PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend);
+        void PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend) const;
+        void PrintAsdu(const IEC104::Asdu& arAsdu) const;
+        void PrintInfoObject(const BaseInfoObject& arInfoObject) const;
+
 
         // Verify that a message is expected and update sequence counters
         bool HandleSequences(const IEC104::Apdu& arReceived);
