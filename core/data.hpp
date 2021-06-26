@@ -83,7 +83,7 @@ public:
     class Iterator
     {
     public:
-        explicit Iterator(typename Container::const_iterator& arSource)
+        explicit Iterator(const typename Container::const_iterator& arSource)
             : mIter(arSource) {}
 
         Iterator& operator++() noexcept
