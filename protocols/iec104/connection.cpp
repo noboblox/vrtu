@@ -9,9 +9,10 @@
 #include "protocols/iec104/asdu.hpp"
 #include "protocols/iec104/infoobjects.hpp"
 
-
 namespace IEC104
 {
+    constexpr const char Connection::SUB_TREE_PREFIX[];
+    constexpr const char Connection::SUB_TREE_BRANCH_PREFIX[];
 
     Connection::Connection(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
                            const std::function<void(Connection&)>& arClosedHandler)
