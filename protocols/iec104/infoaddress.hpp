@@ -21,8 +21,8 @@ namespace IEC104
         }
 
         // Construct unstructured IOA
-        enum class Force {UNSTRUCTURED};
-        constexpr explicit InfoAddress(Force aUnstructured, int aValue, int aSize) noexcept
+        enum class Force {UNSTRUCTURED}; // Avoid confusion with structured constructors
+        constexpr explicit InfoAddress(Force, int aValue, int aSize) noexcept
             : mValue(aValue), mSize(aSize)
         {
         }
@@ -72,6 +72,6 @@ namespace IEC104
         int mSize;
     };
 
-};
+}
 
 #endif

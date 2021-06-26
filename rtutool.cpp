@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
     return -1;
 }
 
-RtuTool::RtuTool(int aArgc, char* aArgv[])
+RtuTool::RtuTool(int, char*[])
 {
     // TODO Do something with args
 }
