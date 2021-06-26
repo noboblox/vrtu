@@ -78,7 +78,7 @@ namespace IEC104
         }
         else
         {
-            mHeader = { 0 };
+            mHeader = {};
         }
     }
 
