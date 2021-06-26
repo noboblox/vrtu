@@ -57,13 +57,13 @@ namespace IEC104
     private:
         void ReadHeader(ByteStream& arBuffer);
         void WriteHeader(ByteStream& arBuffer) const;
-        int GetExpectedSize() const;
+        unsigned GetExpectedSize() const;
 
     private:
         AsduConfig mConfig;
 
         DataEnum<TypeEnum> mType;
-        DataInt    mSize;
+        DataUnsigned mSize;
         DataBool   mIsSequence;
         DataReason mReason;
         DataInt    mOrigin;

@@ -229,7 +229,7 @@ public:
         return mData;
     }
 
-    void WriteJson(JSON::ValueHandle& arValue) const override
+    void WriteJson(JSON::ValueHandle&) const override
     {
     }
 
@@ -239,6 +239,7 @@ private:
 
 // general data
 using DataInt  = SimpleData<int>;
+using DataUnsigned = SimpleData<unsigned>;
 using DataByte = SimpleData<uint8_t>;
 using DataFloat = SimpleData<float>;
 using DataBool = SimpleData<bool>;

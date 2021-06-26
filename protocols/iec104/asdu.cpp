@@ -40,8 +40,8 @@ namespace IEC104
         mConfig(arConfig),
         mType(*this, "type"),
         mSize(*this, "size"),
-        mReason(*this, "reason"),
         mIsSequence(*this, "sequence"),
+        mReason(*this, "reason"),
         mOrigin(*this, "origin"),
         mCommonAddress(*this, "address"),
         mObjects(*this, "objects") {}
@@ -167,7 +167,7 @@ namespace IEC104
         }
     }
 
-    int Asdu::GetExpectedSize() const
+    unsigned Asdu::GetExpectedSize() const
     {
         int result = 2 + mConfig.GetReasonSize() + mConfig.GetCASize();
         const int type = mType.IsValid() ? static_cast<int> ((*mType).GetValue()) : 0;
