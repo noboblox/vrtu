@@ -2,6 +2,7 @@
 #define IEC_104_QUALITY_HPP_
 
 #include <cstdint>
+#include <string>
 
 namespace IEC104
 {
@@ -17,29 +18,56 @@ namespace IEC104
             FLAG_INVALID = 0x80,
         };
 
-        Quality(uint8_t aEncoded)
+        Quality(uint8_t aEncoded) noexcept
             : mFlags(aEncoded) {}
 
         // Construct default: Quality == good
-        explicit Quality()
+        explicit Quality() noexcept
             : mFlags(0) {}
 
         uint8_t GetEncoded() const noexcept { return mFlags; }
 
-        bool IsGood() const { return mFlags == 0; }
-        void ClearAllFlags() { mFlags = 0; }
+        bool IsGood() const noexcept { return mFlags == 0; }
+        void ClearAllFlags() noexcept { mFlags = 0; }
 
-        void SetInvalid(bool aState) { aState ? mFlags |= FLAG_INVALID : mFlags &= (~FLAG_INVALID); }
-        bool IsInvalid() const { return mFlags & FLAG_INVALID; }
+        void SetInvalid(bool aState) noexcept { aState ? mFlags |= FLAG_INVALID : mFlags &= (~FLAG_INVALID); }
+        bool IsInvalid() const noexcept { return mFlags & FLAG_INVALID; }
 
-        void SetNotTopical(bool aState) { aState ? mFlags |= FLAG_NOT_TOPICAL : mFlags &= (~FLAG_NOT_TOPICAL); }
-        bool IsNotTopical() const { return mFlags & FLAG_NOT_TOPICAL; }
+        void SetNotTopical(bool aState) noexcept { aState ? mFlags |= FLAG_NOT_TOPICAL : mFlags &= (~FLAG_NOT_TOPICAL); }
+        bool IsNotTopical() const noexcept { return mFlags & FLAG_NOT_TOPICAL; }
 
-        void SetSubstituted(bool aState) { aState ? mFlags |= FLAG_SUBSTITUTED : mFlags &= (~FLAG_SUBSTITUTED); }
-        bool IsSubstituted() const { return mFlags & FLAG_SUBSTITUTED; }
+        void SetSubstituted(bool aState) noexcept { aState ? mFlags |= FLAG_SUBSTITUTED : mFlags &= (~FLAG_SUBSTITUTED); }
+        bool IsSubstituted() const noexcept { return mFlags & FLAG_SUBSTITUTED; }
 
-        void SetBlocked(bool aState) { aState ? mFlags |= FLAG_BLOCKED : mFlags &= (~FLAG_BLOCKED); }
-        bool IsBlocked() const { return mFlags & FLAG_BLOCKED; }
+        void SetBlocked(bool aState) noexcept { aState ? mFlags |= FLAG_BLOCKED : mFlags &= (~FLAG_BLOCKED); }
+        bool IsBlocked() const noexcept { return mFlags & FLAG_BLOCKED; }
+
+        void SetOverflow(bool aState) noexcept { aState ? mFlags |= FLAG_OVERFLOW : mFlags &= (~FLAG_OVERFLOW); }
+        bool IsOverflow() const noexcept { return mFlags & FLAG_OVERFLOW; }
+
+        std::string ToString() const
+        {
+            static constexpr size_t LABEL_DISTANCE = 4;
+
+            std::string result("{--, --, --, --, --}");
+            size_t pos = 1;
+
+            if (IsInvalid()) result.replace(pos, 2, "IV");
+            pos += LABEL_DISTANCE;
+
+            if (IsNotTopical()) result.replace(pos, 2, "NT");
+            pos += LABEL_DISTANCE;
+
+            if (IsSubstituted()) result.replace(pos, 2, "SB");
+            pos += LABEL_DISTANCE;
+
+            if (IsBlocked()) result.replace(pos, 2, "BL");
+            pos += LABEL_DISTANCE;
+
+            if (IsOverflow()) result.replace(pos, 2, "OV");
+
+            return result;
+        }
 
     private:
         uint8_t mFlags;
