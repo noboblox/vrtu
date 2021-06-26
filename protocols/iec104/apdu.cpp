@@ -165,12 +165,23 @@ namespace IEC104
         return *mpAsdu.get(); 
     }
 
+    bool Apdu::IsService() const noexcept
+    {
+        return IsServiceRequest() || IsServiceConfirmation();
+    }
 
     bool Apdu::IsServiceRequest() const noexcept
     {
         return (mType == STARTDT_REQUEST) ||
-               (mType == STOPDT_REQUEST) ||
+               (mType == STOPDT_REQUEST)  ||
                (mType == TESTFR_REQUEST);
+    }
+
+    bool Apdu::IsServiceConfirmation() const noexcept
+    {
+        return (mType == STARTDT_CONFIRM) ||
+               (mType == STOPDT_CONFIRM)  ||
+               (mType == TESTFR_CONFIRM);
     }
 
     Apdu Apdu::CreateServiceConfirmation() const noexcept
@@ -196,29 +207,46 @@ namespace IEC104
         return result;
     }
 
-    std::string Apdu::TypeToString() const
+    std::string Apdu::GetTypeString() const
     {
         switch (mType)
         {
         case DATA:
-            return "ASDU";
+            return "I";
         case RECEIVE_CONFIRM:
-            return "RECEIVE ack";
+            return "S";
         case STARTDT_REQUEST:
-            return "STARTDT req";
+        case STARTDT_CONFIRM:
+        case STOPDT_REQUEST:
+        case STOPDT_CONFIRM:
+        case TESTFR_REQUEST:
+        case TESTFR_CONFIRM:
+            return "U";
+
+        default:
+            return "";
+        }
+    }
+
+    std::string Apdu::GetServiceString() const
+    {
+        switch (mType)
+        {
+        case STARTDT_REQUEST:
+            return "STARTDT act";
         case STARTDT_CONFIRM:
             return "STARTDT con";
         case STOPDT_REQUEST:
-            return "STOPDT req";
+            return "STOPDT act";
         case STOPDT_CONFIRM:
             return "STOPDT con";
         case TESTFR_REQUEST:
-            return "TESTFR req";
+            return "TESTFR act";
         case TESTFR_CONFIRM:
             return "TESTFR con";
 
         default:
-            return "INVALID";
+            return "";
         }
     }
 

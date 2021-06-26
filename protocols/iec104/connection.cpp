@@ -154,40 +154,49 @@ namespace IEC104
         }
     }
 
+    void PrintSequence(const std::string& arPrefix, int aValue)
+    {
+        std::cout << arPrefix << std::setw(5) << std::to_string(aValue);
+    }
+
+
     void Connection::PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend) const
     {
 
-        std::cout << "[" << (aIsSend ? "--> " : "<-- ") << mSocket.remote_endpoint().address().to_string() << ":" << std::setw(5) << mSocket.remote_endpoint().port() << "]"
-            << " [" << std::setw(12) << std::left << arMessage.TypeToString() << "]";
+        std::cout << "[" << arMessage.GetTypeString() << "] "
+                  << "[" << (aIsSend ? "--> " : "<-- ") << mSocket.remote_endpoint().address().to_string() << ":" << std::setw(5) << mSocket.remote_endpoint().port() << "] { ";
 
-        if (aIsSend)
-        {
-            std::cout << " r = " << std::setw(5) << (arMessage.HasReceiveCounter() ? std::to_string(arMessage.GetReceiveCounter()) : std::string(""))
-                << ", s = " << std::setw(5) << (arMessage.HasSendCounter() ? std::to_string(arMessage.GetSendCounter()) : std::string(""));
-        }
-        else
-        {
-            std::cout << " s = " << std::setw(5) << (arMessage.HasSendCounter() ? std::to_string(arMessage.GetSendCounter()) : std::string(""))
-                << ", r = " << std::setw(5) << (arMessage.HasReceiveCounter() ? std::to_string(arMessage.GetReceiveCounter()) : std::string(""));
-        }
+        if (arMessage.HasReceiveCounter()) 
+            std::cout << "recv: " << std::setw(5) << std::left << std::to_string(arMessage.GetReceiveCounter());
+            
+        if (arMessage.HasSendCounter())
+            std::cout << " | send: " << std::setw(5) << std::left << std::to_string(arMessage.GetSendCounter());
 
+        if (arMessage.IsService())
+            std::cout << "service: " << arMessage.GetServiceString();
 
-        std::cout << ", ASDU size = " << arMessage.GetAsduSize() << ";" << std::endl;
+        std::cout << " }" << std::endl;
 
         if (arMessage.IsAsdu())
         {
             PrintAsdu(arMessage.GetAsdu());
-            std::cout << std::endl;
+            std::cout << std::endl; // Additional newline after ASDUs improves visibility of the next message
         }
-
     }
 
     void Connection::PrintAsdu(const IEC104::Asdu& arAsdu) const
     {
+        static constexpr const char IO_INDENTATION[] = "       ";
+
+        std::cout << " " << SUB_TREE_BRANCH_PREFIX << "[ASDU] {}\n"
+                  << IO_INDENTATION << SUB_TREE_PREFIX << std::endl;
+
+
         Asdu::Iterator it = arAsdu.Begin();
 
         for (; it != arAsdu.End(); ++it)
         {
+            std::cout << IO_INDENTATION << SUB_TREE_BRANCH_PREFIX;
             PrintInfoObject(*it);
         }
 
@@ -195,11 +204,8 @@ namespace IEC104
 
     void Connection::PrintInfoObject(const BaseInfoObject& arInfoObject) const
     {
-        static constexpr const char INTENDATION[] = "        ";
-
-        std::cout << INTENDATION
-            << "[" << std::setw(12) << arInfoObject.GetAddress().GetInt() << "] "
-            << "value: " << std::setw(20) << arInfoObject.GetValueAsString() << ", ";
+        std::cout << "[" << std::setw(12) << arInfoObject.GetAddress().GetInt() << "] "
+                  << "value: " << arInfoObject.GetValueAsString() << ", ";
 
         if (arInfoObject.HasQuality())
         {

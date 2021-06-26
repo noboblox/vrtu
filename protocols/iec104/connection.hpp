@@ -63,6 +63,9 @@ namespace IEC104
 
 
     private:
+        static constexpr const char SUB_TREE_PREFIX[] =        "|   ";
+        static constexpr const char SUB_TREE_BRANCH_PREFIX[] = "|__ ";
+
         boost::asio::io_context& mrContext;
         boost::asio::ip::tcp::socket mSocket;
         std::function<void(Connection&)> ClosedHandler;

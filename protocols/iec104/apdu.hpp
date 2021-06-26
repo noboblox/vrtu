@@ -64,10 +64,13 @@ namespace IEC104
         bool IsAsdu() const noexcept;
         const Asdu& GetAsdu() const;
 
+        bool IsService() const noexcept;
         bool IsServiceRequest() const noexcept;
+        bool IsServiceConfirmation() const noexcept;
         Apdu CreateServiceConfirmation() const noexcept;
 
-        std::string TypeToString() const;
+        std::string GetTypeString() const;
+        std::string GetServiceString() const;
 
     protected:
 
