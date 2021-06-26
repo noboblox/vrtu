@@ -197,9 +197,14 @@ namespace IEC104
     {
         static constexpr const char INTENDATION[] = "        ";
 
-        std::cout << INTENDATION 
-                  << "[" << std::setw(12) << arInfoObject.GetAddress().GetInt() << "] "
-                  << "value: " << std::setw(20) << arInfoObject.GetValueAsString() << ", ";
+        std::cout << INTENDATION
+            << "[" << std::setw(12) << arInfoObject.GetAddress().GetInt() << "] "
+            << "value: " << std::setw(20) << arInfoObject.GetValueAsString() << ", ";
+
+        if (arInfoObject.HasQuality())
+        {
+            std::cout << "quality: " << arInfoObject.GetQuality().ToString();
+        }
 
         std::cout << std::endl;
     }
