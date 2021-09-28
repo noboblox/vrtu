@@ -15,10 +15,24 @@ find_package(Boost
 # TODO: For now just compile everything into one application
 # For real use it needs to be restructured into a library, but symbol exports are currently missing 
 
-add_executable(rtutool 
+# Qt library
+set(CMAKE_AUTOMOC true)
+set(CMAKE_AUTORCC true)
+set(CMAKE_AUTOUIC true)
+
+find_package(Qt5 
+             REQUIRED COMPONENTS
+             Widgets
+)
+
+add_executable(vrtu
 
                # sources (mandatory for compile)
-               rtutool.cpp 
+               #rtutool.cpp 
+               vrtu.cpp
+               mainwindow.cpp
+               mainwindow.ui
+               
                
                errornomoredata.cpp 
                errorunknowntype.cpp
@@ -43,7 +57,8 @@ add_executable(rtutool
                errordecode.hpp
                errornomoredata.hpp
                errorunknowntype.hpp
-               rtutool.hpp
+               #rtutool.hpp
+               mainwindow.hpp
 
                core/bytestream.hpp
                core/data.hpp
@@ -66,21 +81,23 @@ add_executable(rtutool
                protocols/iec104/reason.hpp
 )
 
-target_include_directories(rtutool PRIVATE
+target_include_directories(vrtu PRIVATE
                            ${PROJECT_SOURCE_DIR} 
                            ${Boost_INCLUDE_DIRS})
 
-target_link_libraries(rtutool ${Boost_LIBRARIES})
+target_link_libraries(vrtu
+                      ${Boost_LIBRARIES}
+                      Qt5::Widgets)
 
 # on unix systems boost has a dependency to pthread
 if (NOT WIN32)
-    target_link_libraries(rtutool pthread)
+    target_link_libraries(vrtu pthread)
 endif()
 
 # enable warnings
 if(MSVC)
-  target_compile_options(rtutool PRIVATE /W4)
+  target_compile_options(vrtu PRIVATE /W4)
 else()
-  target_compile_options(rtutool PRIVATE -Wall -Wextra -pedantic)
+  target_compile_options(vrtu PRIVATE -Wall -Wextra -pedantic)
 endif()
 

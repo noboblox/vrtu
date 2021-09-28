@@ -1,3 +1,9 @@
 x64/*
 Debug/*
 Release/*
+vrtu.cflags
+vrtu.config
+vrtu.creator
+vrtu.cxxflags
+vrtu.files
+vrtu.includes
