@@ -8,6 +8,8 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "core/watchdog.hpp"
+#include "core/signal.hpp"
+
 #include "protocols/iec104/apdu.hpp"
 #include "protocols/iec104/connectionconfig.hpp"
 
@@ -76,6 +78,8 @@ namespace IEC104
         Apdu mReceived;
         ConnectionConfig mConfig;
         CORE::Watchdog mAsduConfirmationTrigger;
+
+        CORE::SignalEveryone<void, Connection&, const Apdu&> SignalReceivedApdu;
     };
 }
 
