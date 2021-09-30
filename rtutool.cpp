@@ -7,80 +7,9 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "protocols/iec104/connection.hpp"
-#include "protocols/iec104/connectionconfig.hpp"
-
-namespace IP = boost::asio::ip;
-
-namespace IEC104
-{
-    class Server
-    {
-    public:
-        explicit Server(boost::asio::io_context& arContext, const IP::address& arIP, uint16_t aListeningPort = 2404)
-            : mrContext(arContext), mpAcceptingSocket(nullptr)
-        {
-            // A tcp endpoint for a specific interface
-            boost::asio::ip::tcp::endpoint server_endpoint(arIP, aListeningPort);
-            mpAcceptingSocket.reset(new IP::tcp::acceptor(mrContext, server_endpoint));
-
-            std::cout << "Server socket listening on " << arIP << ":" << aListeningPort << std::endl;
-            StartAccept();
-        }
+#include "protocols/iec104/server.hpp"
 
 
-    private:
-        void StartAccept()
-        {
-            mpAcceptingSocket->async_accept(
-                [this](boost::system::error_code aError, IP::tcp::socket&& arNewSocket)
-                {
-                    this->FinishAccept(aError, std::move(arNewSocket));
-                });
-        }
-
-        void FinishAccept(boost::system::error_code aError, IP::tcp::socket&& arNewSocket)
-        {
-            if (!aError)
-            {
-                mConnections.emplace_back(new Connection(mrContext, std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); } ));
-                (*mConnections.rbegin())->Start();
-                StartAccept();
-            }
-            else
-            {
-                std::cout << aError.message() << std::endl;
-            }
-        }
-        
-        void OnConnectionClosed(Connection& arClosed)
-        {
-            // Safely delete later, not now!
-            boost::asio::post([this, &arClosed]() {this->DeleteConnection(arClosed); });
-        }
-
-        void DeleteConnection(Connection& apClosed)
-        {
-            auto it = mConnections.begin();
-
-            for (; it != mConnections.end(); ++it)
-            {
-                if (it->get() == &apClosed)
-                {
-                    mConnections.erase(it);
-                    break;
-                }
-            }
-        }
-
-    private:
-        boost::asio::io_context& mrContext;
-        std::unique_ptr<IP::tcp::acceptor> mpAcceptingSocket;
-
-        std::vector<std::unique_ptr<Connection>> mConnections;
-    };
-
-}
 int main(int argc, char* argv[])
 {
     try

@@ -31,9 +31,7 @@ add_executable(vrtu
                #rtutool.cpp 
                vrtu.cpp
                mainwindow.cpp
-               mainwindow.ui
-               
-               
+               mainwindow.ui 
                errornomoredata.cpp 
                errorunknowntype.cpp
 
@@ -50,6 +48,7 @@ add_executable(vrtu
                protocols/iec104/data104.cpp
                protocols/iec104/infoaddress.cpp
                protocols/iec104/infoobjects.cpp
+               protocols/iec104/server.cpp
 
                protocols/iec104/register_iec104.cpp
 
@@ -79,6 +78,7 @@ add_executable(vrtu
                protocols/iec104/infoobjects.hpp
                protocols/iec104/quality.hpp
                protocols/iec104/reason.hpp
+               protocols/iec104/server.hpp
 )
 
 target_include_directories(vrtu PRIVATE
