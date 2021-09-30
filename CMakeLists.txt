@@ -34,6 +34,7 @@ add_executable(vrtu
                mainwindow.ui 
                errornomoredata.cpp 
                errorunknowntype.cpp
+               qtserverwrapper.cpp
 
                core/data.cpp
 
@@ -58,6 +59,7 @@ add_executable(vrtu
                errorunknowntype.hpp
                #rtutool.hpp
                mainwindow.hpp
+               qtserverwrapper.hpp
 
                core/bytestream.hpp
                core/data.hpp
