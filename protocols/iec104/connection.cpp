@@ -149,7 +149,7 @@ namespace IEC104
 
     void Connection::DeployMessage(const Apdu& arReceived)
     {
-        SignalReceivedApdu(arReceived);
+        SignalReceivedApdu(*this, arReceived);
     }
 
     void PrintSequence(const std::string& arPrefix, int aValue)
