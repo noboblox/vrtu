@@ -22,6 +22,11 @@ namespace IEC104
 
         CORE::SignalEveryone<void, Connection&> SignalConnected;
         CORE::SignalEveryone<void, Connection&> SignalDisconnected;
+        CORE::SignalEveryone<void, Connection&> SingalStartDT;
+        CORE::SignalEveryone<void, Connection&> SingalStopDT;
+
+        CORE::SignalEveryone<void, Connection&, const Apdu&> SignalApdu;
+        CORE::SignalEveryone<void, Connection&, const Asdu&> SignalAsdu;
 
     private:
         void StartAccept();
