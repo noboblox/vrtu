@@ -31,7 +31,7 @@ RtuTool::RtuTool(int, char*[])
 void RtuTool::Run()
 {
     PrintWelcomeMessage();
-    IEC104::Server server(mContext, IP::make_address("127.0.0.1"));
+    IEC104::Server server(mContext, boost::asio::ip::make_address("127.0.0.1"));
     mContext.run();
 }
 

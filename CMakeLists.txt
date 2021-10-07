@@ -16,11 +16,11 @@ find_package(Boost
 # For real use it needs to be restructured into a library, but symbol exports are currently missing 
 
 # Qt library
-set(CMAKE_AUTOMOC true)
-set(CMAKE_AUTORCC true)
-set(CMAKE_AUTOUIC true)
+#set(CMAKE_AUTOMOC true)
+#set(CMAKE_AUTORCC true)
+#set(CMAKE_AUTOUIC true)
 
-find_package(Qt5 
+find_package(#Qt5 
              REQUIRED COMPONENTS
              Widgets
 )
@@ -28,13 +28,13 @@ find_package(Qt5
 add_executable(vrtu
 
                # sources (mandatory for compile)
-               #rtutool.cpp 
-               vrtu.cpp
-               mainwindow.cpp
-               mainwindow.ui 
+               rtutool.cpp 
+               #vrtu.cpp
+               #mainwindow.cpp
+               #mainwindow.ui 
                errornomoredata.cpp 
                errorunknowntype.cpp
-               qtserverwrapper.cpp
+               #qtserverwrapper.cpp
 
                core/data.cpp
 
@@ -58,8 +58,8 @@ add_executable(vrtu
                errornomoredata.hpp
                errorunknowntype.hpp
                #rtutool.hpp
-               mainwindow.hpp
-               qtserverwrapper.hpp
+               #mainwindow.hpp
+               #qtserverwrapper.hpp
 
                core/bytestream.hpp
                core/data.hpp
@@ -89,7 +89,8 @@ target_include_directories(vrtu PRIVATE
 
 target_link_libraries(vrtu
                       ${Boost_LIBRARIES}
-                      Qt5::Widgets)
+                      #Qt5::Widgets
+                     )
 
 # on unix systems boost has a dependency to pthread
 if (NOT WIN32)
