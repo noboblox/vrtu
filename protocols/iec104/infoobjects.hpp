@@ -74,7 +74,7 @@ namespace IEC104
         EXTERNAL = 1
     };
 
-    template <int TYPE_ID, typename INFOOBJECT, uint16_t SIZE, RegisteredBy aPriority>
+    template <typename INFOOBJECT, int TYPE_ID, uint16_t SIZE, RegisteredBy aPriority>
     class StaticRegistration
     {
     public:
@@ -98,9 +98,24 @@ namespace IEC104
         virtual void WriteTo(ByteStream& arOutput) const;
 
         bool HasQuality() const noexcept;
-        const Quality& GetQuality() const;
-
+        const Quality& BaseInfoObject::GetQuality() const;
         virtual std::string GetValueAsString() const = 0;
+
+        template <typename INFOOBJECT>
+        INFOOBJECT& Get()
+        {
+            if (INFOOBJECT::TYPE_ID != GetTypeId())
+                throw std::invalid_argument("Cannot convert to target type");
+            return static_cast<INFOOBJECT&>(*this);
+        }
+        
+        template <typename INFOOBJECT>
+        const INFOOBJECT& Get() const
+        {
+            if (INFOOBJECT::TYPE_ID != GetTypeId())
+                throw std::invalid_argument("Cannot convert to target type");
+            return static_cast<const INFOOBJECT&>(*this);
+        }
 
         /*
          * Modification: Type is written only, if the object is a standalone object (without an ASDU)
@@ -108,8 +123,11 @@ namespace IEC104
         void WriteJson(JSON::ValueHandle& arValue) const override;
 
     protected:
+        static constexpr uint8_t FLAG_WITH_QUALITY   = 0x01;
+        static constexpr uint8_t FLAG_WITH_TIMESTAMP = 0x02;
+
         // Standalone info object. Can be added to an ASDU via append
-        BaseInfoObject(const std::string& arName, int aTypeId, DataQuality* apQuality);
+        BaseInfoObject(const std::string& arName, int aTypeId, uint8_t aFlags);
 
         void RequireNull(int aChecked) const;
         void RequireValid(const BaseData& arChecked) const;
@@ -117,13 +135,27 @@ namespace IEC104
     private:
         DataEnum<TypeEnum> mType;
         DataInfoAddress mAddress;
-        DataQuality* mpQuality;
+        uint8_t mFlags;
     };
 
-    // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
-    class DataSinglePoint : public BaseInfoObject
+    class WithQuality : public BaseInfoObject
     {
     public:
+        const Quality& GetQuality() const;
+
+    protected:
+        WithQuality(const std::string& arName, int aTypeId);
+        DataQuality mQuality;
+    };
+
+
+    // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
+    class DataSinglePoint : public WithQuality
+    {
+    public:
+        static constexpr int TYPE_ID   = IEC104::Type::M_SP_NA_1;
+        static constexpr int DATA_SIZE = 1;
+
         DataSinglePoint();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
@@ -131,13 +163,15 @@ namespace IEC104
 
     private:
         DataBool mValue;
-        DataQuality mQuality;
     };
 
     // Type 3: M_DP_NA_1 ////////////////////////////////////////////////////////////
-    class DataDoublePoint : public BaseInfoObject
+    class DataDoublePoint : public WithQuality
     {
     public:
+        static constexpr int TYPE_ID   = IEC104::Type::M_DP_NA_1;
+        static constexpr int DATA_SIZE = 1;
+
         DataDoublePoint();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
@@ -145,13 +179,15 @@ namespace IEC104
 
     private:
         DataEnum<DoublePointEnum> mValue;
-        DataQuality mQuality;
     };
 
     // Type 11: M_ME_NB_1 ////////////////////////////////////////////////////////////
-    class DataMeasuredScaled : public BaseInfoObject
+    class DataMeasuredScaled : public WithQuality
     {
     public:
+        static constexpr int TYPE_ID = IEC104::Type::M_ME_NB_1;
+        static constexpr int DATA_SIZE = 3;
+
         DataMeasuredScaled();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
@@ -159,13 +195,15 @@ namespace IEC104
 
     private:
         DataInt mValue;
-        DataQuality mQuality;
     };
 
     // Type 13: M_ME_NC_1 ////////////////////////////////////////////////////////////
-    class DataMeasuredFloat : public BaseInfoObject
+    class DataMeasuredFloat : public WithQuality
     {
     public:
+        static constexpr int TYPE_ID = IEC104::Type::M_ME_NC_1;
+        static constexpr int DATA_SIZE = 5;
+
         DataMeasuredFloat();
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
@@ -173,7 +211,6 @@ namespace IEC104
 
     private:
         DataFloat mValue;
-        DataQuality mQuality;
     };
 }
 #endif

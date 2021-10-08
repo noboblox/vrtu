@@ -32,18 +32,18 @@ namespace IEC104
 
 
     /* ID 1 == M_SP_NA_1 */
-    static StaticRegistration<static_cast<int>(Type::M_SP_NA_1), DataSinglePoint, 1,
+    static StaticRegistration<DataSinglePoint, DataSinglePoint::TYPE_ID, DataSinglePoint::DATA_SIZE,
                               RegisteredBy::INTERNAL> gRegisterType1;
     
     /* ID 3 == M_DP_NA_1 */
-    static StaticRegistration<static_cast<int>(Type::M_DP_NA_1), DataDoublePoint, 1,
+    static StaticRegistration<DataDoublePoint, DataDoublePoint::TYPE_ID, DataDoublePoint::DATA_SIZE,
                               RegisteredBy::INTERNAL> gRegisterType3;
     
     /* ID 11 == M_ME_NB_1 */
-    static StaticRegistration<static_cast<int>(Type::M_ME_NB_1), DataMeasuredScaled, 3,
+    static StaticRegistration<DataMeasuredScaled, DataMeasuredScaled::TYPE_ID, DataMeasuredScaled::DATA_SIZE,
                               RegisteredBy::INTERNAL> gRegisterType11;
 
     /* ID 13 == M_ME_NC_1 */
-    static StaticRegistration<static_cast<int>(Type::M_ME_NC_1), DataMeasuredFloat, 5,
+    static StaticRegistration<DataMeasuredFloat, DataMeasuredFloat::TYPE_ID, DataMeasuredFloat::DATA_SIZE,
                               RegisteredBy::INTERNAL> gRegisterType13;
 }

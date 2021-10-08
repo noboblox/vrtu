@@ -91,7 +91,7 @@ namespace IEC104
     } ;
     using ReasonCodeEnum = NamedEnum<ReasonCode>;
 
-    enum class Type
+    enum Type
     {
         // Process information - monitoring direction
         M_SP_NA_1 = 1,

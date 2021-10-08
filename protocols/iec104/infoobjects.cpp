@@ -55,11 +55,11 @@ namespace IEC104
         return msRegistered.find(LookupKey(aType, LookupKey::ANY_PRIORITY)) != msRegistered.cend();
     }
 
-    BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId, DataQuality* apQuality)
+    BaseInfoObject::BaseInfoObject(const std::string& arName, int aTypeId, uint8_t aFlags)
         : DataStruct(arName),
           mType(*this, "type"),
           mAddress(*this, "ioa"),
-          mpQuality(apQuality)
+          mFlags(aFlags)
     {
         mType = TypeEnum(static_cast<IEC104::Type>(aTypeId));
     }
@@ -100,17 +100,14 @@ namespace IEC104
 
     bool BaseInfoObject::HasQuality() const noexcept
     {
-        return mpQuality != nullptr;
+        return mFlags & FLAG_WITH_QUALITY;
     }
 
     const Quality& BaseInfoObject::GetQuality() const
     {
         if (!HasQuality())
             throw std::invalid_argument("InfoObject has no quality");
-        else if (!mpQuality->IsValid())
-            throw std::invalid_argument("The quality is not valid");
-
-        return **mpQuality;
+        return static_cast<const WithQuality&>(*this).GetQuality();
     }
 
     void BaseInfoObject::RequireNull(int aChecked) const
@@ -125,11 +122,23 @@ namespace IEC104
             throw std::runtime_error("Data is not valid");
     }
 
+    const Quality& WithQuality::GetQuality() const
+    {
+        if (!mQuality.IsValid())
+            throw std::invalid_argument("quality is not valid");
+        return *mQuality;
+    }
+
+    WithQuality::WithQuality(const std::string& arName, int aTypeId)
+        : BaseInfoObject(arName, aTypeId, FLAG_WITH_QUALITY),
+          mQuality(*this, "quality")
+    {
+    }
+
     // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
     DataSinglePoint::DataSinglePoint()
-        : BaseInfoObject("singlePoint", 1, &mQuality),
-          mValue(*this, "value"),
-          mQuality(*this, "quality")
+        : WithQuality("singlePoint", TYPE_ID),
+          mValue(*this, "value")
     {
     }
 
@@ -163,9 +172,8 @@ namespace IEC104
 
     // Type 3: M_DP_NA_1 ////////////////////////////////////////////////////////////
     DataDoublePoint::DataDoublePoint()
-      : BaseInfoObject("doublePoint", 3, &mQuality),
-        mValue(*this, "value"),
-        mQuality(*this, "quality")
+      : WithQuality("doublePoint", TYPE_ID),
+        mValue(*this, "value")
     {
     }
 
@@ -198,9 +206,8 @@ namespace IEC104
 
     // Type 11: M_ME_NB_1 ////////////////////////////////////////////////////////////
     DataMeasuredScaled::DataMeasuredScaled()
-        : BaseInfoObject("measuredScaled", 11, &mQuality),
-        mValue(*this, "value"),
-        mQuality(*this, "quality")
+        : WithQuality("measuredScaled", TYPE_ID),
+        mValue(*this, "value")
     {
     }
 
@@ -246,9 +253,8 @@ namespace IEC104
 
     // Type 13: M_ME_NC_1 ////////////////////////////////////////////////////////////
     DataMeasuredFloat::DataMeasuredFloat()
-        : BaseInfoObject("measuredFloat", 13, &mQuality),
-        mValue(*this, "value"),
-        mQuality(*this, "quality")
+        : WithQuality("measuredFloat", TYPE_ID),
+        mValue(*this, "value")
     {
     }
 
