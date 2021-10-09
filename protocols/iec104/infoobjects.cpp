@@ -305,4 +305,29 @@ namespace IEC104
         RequireValid(mValue);
         return std::to_string(*mValue);
     }
+
+
+    // Type 100: C_IC_NA_1 ////////////////////////////////////////////////////////////
+    DataInterrogationCommand::DataInterrogationCommand()
+        : BaseInfoObject("general interrogation", TYPE_ID),
+        mValue(*this, "value")
+    {
+    }
+
+    void DataInterrogationCommand::ReadFrom(ByteStream& arInput, int aAddressSize)
+    {
+        BaseInfoObject::ReadFrom(arInput, aAddressSize);
+        RETHROW_FAIL_AS_DECODE_ERROR(mValue = InterrogationQualifier(arInput.ReadByte()), mValue);
+    }
+
+    void DataInterrogationCommand::WriteTo(ByteStream& arOutput) const
+    {
+        BaseInfoObject::WriteTo(arOutput);
+        arOutput.WriteByte(static_cast<uint8_t>((*mValue).GetValue()));
+    }
+    std::string DataInterrogationCommand::GetValueAsString() const
+    {
+        RequireValid(mValue);
+        return (*mValue).GetLabel();
+    }
 }

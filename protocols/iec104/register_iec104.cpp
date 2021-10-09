@@ -46,4 +46,8 @@ namespace IEC104
     /* ID 13 == M_ME_NC_1 */
     static StaticRegistration<DataMeasuredFloat, DataMeasuredFloat::TYPE_ID, DataMeasuredFloat::DATA_SIZE,
                               RegisteredBy::INTERNAL> gRegisterType13;
+    
+    /* ID 100 == C_IC_NA_1 */
+    static StaticRegistration<DataInterrogationCommand, DataInterrogationCommand::TYPE_ID, DataInterrogationCommand::DATA_SIZE,
+                              RegisteredBy::INTERNAL> gRegisterType100;
 }

@@ -127,7 +127,7 @@ namespace IEC104
         static constexpr uint8_t FLAG_WITH_TIMESTAMP = 0x02;
 
         // Standalone info object. Can be added to an ASDU via append
-        BaseInfoObject(const std::string& arName, int aTypeId, uint8_t aFlags);
+        BaseInfoObject(const std::string& arName, int aTypeId, uint8_t aFlags = 0);
 
         void RequireNull(int aChecked) const;
         void RequireValid(const BaseData& arChecked) const;
@@ -211,6 +211,22 @@ namespace IEC104
 
     private:
         DataFloat mValue;
+    };
+
+    // Type 100: C_IC_NA_1 ////////////////////////////////////////////////////////////
+    class DataInterrogationCommand : public BaseInfoObject
+    {
+    public:
+        static constexpr int TYPE_ID = IEC104::Type::C_IC_NA_1;
+        static constexpr int DATA_SIZE = 1;
+
+        DataInterrogationCommand();
+        void ReadFrom(ByteStream& arInput, int aAddressSize) override;
+        void WriteTo(ByteStream& arOutput) const override;
+        std::string GetValueAsString() const override;
+
+    private:
+        DataEnum<InterrogationQualifierEnum> mValue;
     };
 }
 #endif
