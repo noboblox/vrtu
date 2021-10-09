@@ -98,7 +98,7 @@ namespace IEC104
         virtual void WriteTo(ByteStream& arOutput) const;
 
         bool HasQuality() const noexcept;
-        const Quality& BaseInfoObject::GetQuality() const;
+        const Quality& GetQuality() const;
         virtual std::string GetValueAsString() const = 0;
 
         template <typename INFOOBJECT>
