@@ -46,6 +46,9 @@ namespace IEC104
         void ReadFrom(ByteStream& arBuffer);
         void WriteTo(ByteStream& arBuffer) const;
 
+        TypeEnum GetType() const;
+        int GetNumberOfInfoObjects() const noexcept;
+
         Iterator Begin() const { return mObjects.Begin(); }
         Iterator End()  const { return mObjects.End(); }
 

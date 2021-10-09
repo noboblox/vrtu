@@ -6,6 +6,7 @@
 #include <boost/asio/write.hpp>
 
 #include "core/bytestream.hpp"
+#include "external/style.hpp"
 #include "protocols/iec104/asdu.hpp"
 #include "protocols/iec104/infoobjects.hpp"
 
@@ -174,11 +175,9 @@ namespace IEC104
             std::cout << "service: " << arMessage.GetServiceString();
 
         std::cout << " }" << std::endl;
-
         if (arMessage.IsAsdu())
         {
             PrintAsdu(arMessage.GetAsdu());
-            std::cout << std::endl; // Additional newline after ASDUs improves visibility of the next message
         }
     }
 
@@ -186,9 +185,16 @@ namespace IEC104
     {
         static constexpr const char IO_INDENTATION[] = "       ";
 
-        std::cout << " " << SUB_TREE_BRANCH_PREFIX << "[ASDU] {}\n"
-                  << IO_INDENTATION << SUB_TREE_PREFIX << std::endl;
+        TypeEnum type_id = arAsdu.GetType();
+        int num_objects = arAsdu.GetNumberOfInfoObjects();
 
+        std::cout << STYLE::bright_cyan << " " << SUB_TREE_BRANCH_PREFIX << "[ASDU] : "
+                  << type_id.GetLabel() << " (" << type_id.GetValue() << ") with " << num_objects << " info object";
+        
+        if (num_objects != 1)
+            std::cout << "s";
+
+        std::cout << std::endl;
 
         Asdu::Iterator it = arAsdu.Begin();
 
@@ -198,6 +204,7 @@ namespace IEC104
             PrintInfoObject(*it);
         }
 
+        std::cout << STYLE::reset;
     }
 
     void Connection::PrintInfoObject(const BaseInfoObject& arInfoObject) const

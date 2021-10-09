@@ -46,6 +46,18 @@ namespace IEC104
         mCommonAddress(*this, "address"),
         mObjects(*this, "objects") {}
 
+    TypeEnum Asdu::GetType() const
+    {
+        if (!IsValid())
+            throw std::invalid_argument("Cannot query type id on invalid ASDU");
+        return *mType;
+    }
+
+    int Asdu::GetNumberOfInfoObjects() const noexcept
+    {
+        return mObjects.GetSize();
+    }
+
     void Asdu::ReadFrom(ByteStream& arBuffer)
     {
         try
@@ -69,6 +81,8 @@ namespace IEC104
             Clear();
             throw;
         }
+
+        SetValid(true);
     }
     
     void Asdu::WriteTo(ByteStream& arBuffer) const
