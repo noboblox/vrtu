@@ -85,16 +85,35 @@ target_link_libraries(iec104
                      )
                           
 add_executable(vrtu
-    rtutool.cpp 
+  app/vrtu.cpp
+  
+  # todo
+  external/imgui/imgui_demo.cpp
+  
+  external/imgui/imgui.cpp
+  external/imgui/imgui_draw.cpp
+  external/imgui/imgui_tables.cpp
+  external/imgui/imgui_widgets.cpp
+  external/imgui/backends/imgui_impl_glfw.cpp
+  external/imgui/backends/imgui_impl_opengl3.cpp
 )
 
 target_include_directories(vrtu PRIVATE
-                           ${PROJECT_SOURCE_DIR} 
+                           ${PROJECT_SOURCE_DIR}
+                           ${PROJECT_SOURCE_DIR}/external/imgui
+                           ${PROJECT_SOURCE_DIR}/external/imgui/backends
+                           
+                           # todo
+                           ${PROJECT_SOURCE_DIR}/external/imgui/examples/example_glfw_opengl3
+                           
                            ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(vrtu
                       vrtucore
                       iec104
+                      glfw
+                      GL
+                      dl
                       ${Boost_LIBRARIES}
                      )
 
