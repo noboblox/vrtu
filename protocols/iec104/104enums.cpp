@@ -77,6 +77,7 @@ IEC104::ReasonCodeEnum::DefinitionContainer IEC104::ReasonCodeEnum::msDefinition
 
 template<>
 IEC104::TypeEnum::DefinitionContainer IEC104::TypeEnum::msDefinition = {
+    IEC104::TypeEnum::Definition(IEC104::Type::UNDEFINED, "undefined"),
     IEC104::TypeEnum::Definition(IEC104::Type::M_SP_NA_1, "M_SP_NA_1"),
     IEC104::TypeEnum::Definition(IEC104::Type::M_SP_TA_1, "M_SP_TA_1"),
     IEC104::TypeEnum::Definition(IEC104::Type::M_DP_NA_1, "M_DP_NA_1"),

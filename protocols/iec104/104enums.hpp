@@ -93,6 +93,7 @@ namespace IEC104
 
     enum Type
     {
+        UNDEFINED = 0,
         // Process information - monitoring direction
         M_SP_NA_1 = 1,
         M_SP_TA_1 = 2,

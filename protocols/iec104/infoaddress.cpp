@@ -13,6 +13,8 @@ namespace IEC104
 
         switch (mSize)
         {
+        case 0:
+            break;
         case 1:
             mValue = apSource[0];
             break;
@@ -34,6 +36,8 @@ namespace IEC104
     {
         switch (mSize)
         {
+        case 0:
+            break;
         case 1:
             arOutput.WriteByte(mValue & 0xFF);
             break;
@@ -47,7 +51,6 @@ namespace IEC104
             arOutput.WriteByte((mValue & 0xFF0000) >> 16);
             break;
 
-        case 0:
         default:
             break;
         }

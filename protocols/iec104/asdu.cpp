@@ -65,6 +65,14 @@ namespace IEC104
             ReadHeader(arBuffer);
             mObjects.Clear();
 
+            /*
+             * the standard defines 2 cases:
+             * 1. ASDU sequence-optimization is DISABLED -> each info object has its own address
+             * 2. ASDU sequence-optimization is ENABLED  -> only the 1st info object has an address
+             *    subsequent objects have an implicit address, which is incremented
+             */
+            int ioa_size = mConfig.GetIOASize(); // 1st address is always present
+
             while (arBuffer.RemainingBytes() != 0)
             {
                 if (mObjects.GetSize() == (*mSize))
@@ -72,7 +80,10 @@ namespace IEC104
 
                 auto p_data = InfoObjectFactory::Create(static_cast<int>((*mType).GetValue()));
                 mObjects.Append(p_data);
-                p_data->ReadFrom(arBuffer, mConfig.GetIOASize());
+                p_data->ReadFrom(arBuffer, ioa_size);
+
+                if (*mIsSequence)
+                    ioa_size = 0;
             }
         }
         catch (std::exception& e)
@@ -116,7 +127,7 @@ namespace IEC104
         {
             uint8_t encoded;
             RETHROW_FAIL_AS_DECODE_ERROR(encoded = arBuffer.ReadByte(), mReason);
-            mReason = Reason(static_cast<ReasonCode>(encoded & 0x3F), encoded & 0x40, encoded & 0x80);
+            mReason = static_cast<ReasonCode>(encoded & 0x3F);
         }
 
         if (mConfig.GetReasonSize() == 2)
@@ -159,9 +170,9 @@ namespace IEC104
         }
 
         {
-            encoded = static_cast<uint8_t> ((*mReason).GetReasonCode().GetValue());
-            encoded |= ((*mReason).IsNegative() << 6);
-            encoded |= ((*mReason).IsTest()     << 7);
+            encoded = static_cast<uint8_t> ((*mReason).GetValue());
+            //encoded |= ((*mReason).IsNegative() << 6);
+            //encoded |= ((*mReason).IsTest()     << 7);
             arBuffer.WriteByte(encoded);
         }
 

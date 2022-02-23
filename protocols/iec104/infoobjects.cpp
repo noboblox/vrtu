@@ -76,9 +76,16 @@ namespace IEC104
 
     void BaseInfoObject::ReadFrom(ByteStream& arInput, int aAddressSize)
     {
-        const uint8_t* p_encoded = nullptr;
-        RETHROW_FAIL_AS_DECODE_ERROR(p_encoded = arInput.ReadData(aAddressSize), mAddress);
-        mAddress = InfoAddress(p_encoded, aAddressSize);
+        if (aAddressSize == 0)
+        {
+            mAddress = InfoAddress();
+        }
+        else
+        {
+            const uint8_t* p_encoded = nullptr;
+            RETHROW_FAIL_AS_DECODE_ERROR(p_encoded = arInput.ReadData(aAddressSize), mAddress);
+            mAddress = InfoAddress(p_encoded, aAddressSize);
+        }
     }
 
     void BaseInfoObject::WriteTo(ByteStream& arOutput) const

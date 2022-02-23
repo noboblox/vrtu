@@ -35,8 +35,6 @@ namespace IEC104
     private:
         Quality mData;
     };
-
-    using DataReason = DummyData<IEC104::Reason>;
 }
 
 #endif

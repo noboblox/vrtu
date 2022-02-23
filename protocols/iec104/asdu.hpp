@@ -41,13 +41,18 @@ namespace IEC104
     public:
         using Iterator = DataArray<BaseInfoObject>::Iterator;
 
-        Asdu(const AsduConfig& arConfig);
+        Asdu(const AsduConfig& arConfig = AsduConfig::Defaults);
 
         void ReadFrom(ByteStream& arBuffer);
         void WriteTo(ByteStream& arBuffer) const;
 
         TypeEnum GetType() const;
         int GetNumberOfInfoObjects() const noexcept;
+
+        bool IsSequence() const {return *mIsSequence;}
+        int GetObjectCount() const {return *mSize;}
+        ReasonCodeEnum GetReason() const {return *mReason;}
+        int GetAddress() const {return *mCommonAddress;}
 
         Iterator Begin() const { return mObjects.Begin(); }
         Iterator End()  const { return mObjects.End(); }
@@ -56,19 +61,17 @@ namespace IEC104
         bool HasMoreSpace() const;
         int Append(const SharedInfoObject& arInfoObj);
 
-
     private:
         void ReadHeader(ByteStream& arBuffer);
         void WriteHeader(ByteStream& arBuffer) const;
         unsigned GetExpectedSize() const;
-
     private:
         AsduConfig mConfig;
 
         DataEnum<TypeEnum> mType;
         DataUnsigned mSize;
         DataBool   mIsSequence;
-        DataReason mReason;
+        DataEnum<ReasonCodeEnum> mReason;
         DataInt    mOrigin;
         DataInt    mCommonAddress;
         DataArray<BaseInfoObject> mObjects;

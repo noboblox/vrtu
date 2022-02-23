@@ -13,12 +13,20 @@ public:
     explicit ByteStream() noexcept
         : mIterator(0), mBuffer() {}
 
+    explicit ByteStream(const uint8_t* apBegin, const uint8_t* apEnd)
+        : mIterator(0), mBuffer(apBegin, apEnd) {}
+
     /* Buffer status API (for error handling) */
 
     /// Overall size of the internal buffer
     inline size_t BufferSize() const noexcept
     {
         return mBuffer.size();
+    }
+
+    inline void Reserve(size_t aBytes)
+    {
+        return mBuffer.reserve(aBytes);
     }
 
     /// Begin iterator of the internal buffer
