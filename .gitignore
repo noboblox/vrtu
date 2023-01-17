@@ -7,3 +7,6 @@ vrtu.creator
 vrtu.cxxflags
 vrtu.files
 vrtu.includes
+.settings/language.settings.xml
+.project
+.cproject
