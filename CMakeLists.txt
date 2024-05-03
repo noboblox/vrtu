@@ -73,6 +73,7 @@ qt_add_executable(vrtu
   app/mainwindow.cpp
   app/mainwindow.h
   app/mainwindow.ui
+  app/data.qrc
 )
 
 qt_add_translations(vrtu
@@ -87,6 +88,8 @@ target_include_directories(vrtu PRIVATE
                            ${PROJECT_SOURCE_DIR}                           
                            ${Boost_INCLUDE_DIRS}
                            ${Qt6Widgets_INCLUDE_DIRS})
+
+qt_add_resources(vrtu app/data.qrc)
 
 target_link_libraries(vrtu PRIVATE
                       vrtucore
