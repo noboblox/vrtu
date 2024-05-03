@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>data/racoon.png</normaloff>/data/racoon.png</iconset>
+    <normaloff>data/racoon.png</normaloff>data/racoon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,4">
@@ -25,7 +25,7 @@
     <item>
      <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,1">
       <item row="3" column="0" colspan="3">
-       <widget class="QTableWidget" name="tableWidget_2"/>
+       <widget class="QTableWidget" name="tableConnections"/>
       </item>
       <item row="2" column="2">
        <widget class="QPushButton" name="btStop">
@@ -51,10 +51,14 @@
        </spacer>
       </item>
       <item row="0" column="0" colspan="3">
-       <widget class="QComboBox" name="comboBox"/>
+       <widget class="QComboBox" name="cbIpSelect"/>
       </item>
       <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="editPort">
+        <property name="text">
+         <string>2404</string>
+        </property>
+       </widget>
       </item>
       <item row="2" column="0">
        <widget class="QPushButton" name="btStart">
@@ -64,12 +68,12 @@
        </widget>
       </item>
       <item row="4" column="0" colspan="3">
-       <widget class="QTableView" name="tableView"/>
+       <widget class="QTableView" name="tableConnectionDetails"/>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QTableWidget" name="tableWidget"/>
+     <widget class="QTableWidget" name="tableMainLog"/>
     </item>
    </layout>
   </widget>
@@ -97,5 +101,42 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>btStart</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onStartClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>58</x>
+     <y>119</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>660</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>btStop</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onStopClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>233</x>
+     <y>119</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>660</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onStartClicked()</slot>
+  <slot>onStopClicked()</slot>
+ </slots>
 </ui>
