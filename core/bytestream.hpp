@@ -5,8 +5,6 @@
 #include <stdexcept>
 #include <vector>
 
-#include "errornomoredata.hpp"
-
 class ByteStream
 {
 public:
@@ -46,13 +44,6 @@ public:
     inline const uint8_t* Iterator() const noexcept
     {
         return mBuffer.empty() ? nullptr : (mBuffer.data() + mIterator);
-    }
-
-    /// Rollback the internal iterator. In case an error occured while decoding an already read data portion
-    inline void Rollback(size_t aCount) noexcept
-    {
-        if (mIterator >= aCount)
-            mIterator -= aCount;
     }
 
     /* Data access API */
@@ -98,7 +89,7 @@ public:
     const uint8_t* ReadData(size_t aBytes)
     {
         if (RemainingBytes() < aBytes)
-            throw ErrorNoMoreData(*this);
+            throw std::out_of_range("tried to read more data than available");
 
         const uint8_t* p_result = Iterator();
         mIterator += aBytes;

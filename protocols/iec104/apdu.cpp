@@ -5,7 +5,6 @@
 #include <string>
 
 #include "core/bytestream.hpp"
-#include "errorunknowntype.hpp"
 #include "protocols/iec104/asdu.hpp"
 
 namespace IEC104
@@ -148,8 +147,6 @@ namespace IEC104
                 mpAsdu->ReadFrom(arInput);
                 return true;
             }
-            catch (ErrorNoMoreData& e) { e.PrintError(std::cout) << std::endl; } // Support coloring on windows
-            catch (ErrorUnknownType& e) { e.PrintError(std::cout) << std::endl; } // Support coloring on windows
             catch (std::exception& e)  { std::cout << e.what() << std::endl; }
             catch (...) {}
         }
@@ -272,7 +269,7 @@ namespace IEC104
         apBegin[1] = ((aValue >> 7) & 0xFF);
     }
 
-    Apdu::MessageType Apdu::VerifyMessage() noexcept
+    Apdu::MessageType Apdu::VerifyMessage() const noexcept
     {
         // APCI 
         // [0] Always 0x68

@@ -48,12 +48,6 @@ namespace IEC104
         void RespondTo(const Apdu& arReceived);
         void DeployMessage(const Apdu& arReceived);
 
-        // Print the message on screen
-        void PrintMessage(const IEC104::Apdu& arMessage, bool aIsSend) const;
-        void PrintAsdu(const IEC104::Asdu& arAsdu) const;
-        void PrintInfoObject(const BaseInfoObject& arInfoObject) const;
-
-
         // Verify that a message is expected and update sequence counters
         bool HandleSequences(const IEC104::Apdu& arReceived);
         bool IsAsduConfirmThresholdReached() const noexcept;
@@ -65,9 +59,6 @@ namespace IEC104
 
 
     private:
-        static constexpr const char SUB_TREE_PREFIX[] =        "    ";
-        static constexpr const char SUB_TREE_BRANCH_PREFIX[] = "    ";
-
         boost::asio::io_context& mrContext;
         boost::asio::ip::tcp::socket mSocket;
         std::function<void(Connection&)> ClosedHandler;

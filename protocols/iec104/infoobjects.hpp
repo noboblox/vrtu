@@ -6,10 +6,9 @@
 #include <memory>
 #include <string>
 
-#include "core/data.hpp"
 #include "protocols/iec104/104enums.hpp"
-#include "protocols/iec104/data104.hpp"
 #include "protocols/iec104/infoaddress.hpp"
+#include "protocols/iec104/quality.hpp"
 
 namespace IEC104
 {
@@ -88,7 +87,7 @@ namespace IEC104
         }
     };
 
-    class BaseInfoObject : public DataStruct
+    class BaseInfoObject
     {
     public:
         int GetTypeId() const;
@@ -97,12 +96,8 @@ namespace IEC104
         virtual void ReadFrom(ByteStream& arInput, int aAddressSize);
         virtual void WriteTo(ByteStream& arOutput) const;
 
-        bool HasQuality() const noexcept;
-        const Quality& GetQuality() const;
-        virtual std::string GetValueAsString() const = 0;
-
         template <typename INFOOBJECT>
-        INFOOBJECT& Get()
+        INFOOBJECT& As()
         {
             if (INFOOBJECT::TYPE_ID != GetTypeId())
                 throw std::invalid_argument("Cannot convert to target type");
@@ -110,123 +105,95 @@ namespace IEC104
         }
         
         template <typename INFOOBJECT>
-        const INFOOBJECT& Get() const
+        const INFOOBJECT& As() const
         {
             if (INFOOBJECT::TYPE_ID != GetTypeId())
                 throw std::invalid_argument("Cannot convert to target type");
             return static_cast<const INFOOBJECT&>(*this);
         }
 
-        /*
-         * Modification: Type is written only, if the object is a standalone object (without an ASDU)
-         */
-        void WriteJson(JSON::ValueHandle& arValue) const override;
-
-    protected:
-        static constexpr uint8_t FLAG_WITH_QUALITY   = 0x01;
-        static constexpr uint8_t FLAG_WITH_TIMESTAMP = 0x02;
-
         // Standalone info object. Can be added to an ASDU via append
-        BaseInfoObject(const std::string& arName, int aTypeId, uint8_t aFlags = 0);
-
-        void RequireNull(int aChecked) const;
-        void RequireValid(const BaseData& arChecked) const;
+        BaseInfoObject(int aTypeId);
 
     private:
-        DataEnum<TypeEnum> mType;
-        DataInfoAddress mAddress;
-        uint8_t mFlags;
-    };
-
-    class WithQuality : public BaseInfoObject
-    {
-    public:
-        const Quality& GetQuality() const;
-
-    protected:
-        WithQuality(const std::string& arName, int aTypeId);
-        DataQuality mQuality;
+        int mType;
+        InfoAddress mAddress;
     };
 
 
     // Type 1: M_SP_NA_1 ////////////////////////////////////////////////////////////
-    class DataSinglePoint : public WithQuality
+    class DataSinglePoint : public BaseInfoObject
     {
     public:
-        static constexpr int TYPE_ID   = IEC104::Type::M_SP_NA_1;
+        static constexpr int TYPE_ID   = Type::M_SP_NA_1;
         static constexpr int DATA_SIZE = 1;
 
-        DataSinglePoint();
+        DataSinglePoint() : BaseInfoObject(TYPE_ID) {}
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
-        std::string GetValueAsString() const override;
 
-    private:
-        DataBool mValue;
+        bool val = false;
+        Quality q = Quality();
     };
 
     // Type 3: M_DP_NA_1 ////////////////////////////////////////////////////////////
-    class DataDoublePoint : public WithQuality
+    class DataDoublePoint : public BaseInfoObject
     {
     public:
-        static constexpr int TYPE_ID   = IEC104::Type::M_DP_NA_1;
+        static constexpr int TYPE_ID   = Type::M_DP_NA_1;
         static constexpr int DATA_SIZE = 1;
 
-        DataDoublePoint();
+        DataDoublePoint() : BaseInfoObject(TYPE_ID) {}
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
-        std::string GetValueAsString() const override;
 
-    private:
-        DataEnum<DoublePointEnum> mValue;
+        DoublePointEnum val = DoublePoint::OFF;
+        Quality q = Quality();
     };
 
     // Type 11: M_ME_NB_1 ////////////////////////////////////////////////////////////
-    class DataMeasuredScaled : public WithQuality
+    class DataMeasuredScaled : public BaseInfoObject
     {
     public:
-        static constexpr int TYPE_ID = IEC104::Type::M_ME_NB_1;
+        static constexpr int TYPE_ID = Type::M_ME_NB_1;
         static constexpr int DATA_SIZE = 3;
 
-        DataMeasuredScaled();
+        DataMeasuredScaled() : BaseInfoObject(TYPE_ID) {}
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
-        std::string GetValueAsString() const override;
 
-    private:
-        DataInt mValue;
+        int val = 0;
+        // TODO ValueQuality
     };
 
     // Type 13: M_ME_NC_1 ////////////////////////////////////////////////////////////
-    class DataMeasuredFloat : public WithQuality
+    class DataMeasuredFloat : public BaseInfoObject
     {
     public:
-        static constexpr int TYPE_ID = IEC104::Type::M_ME_NC_1;
+        static constexpr int TYPE_ID = Type::M_ME_NC_1;
         static constexpr int DATA_SIZE = 5;
 
-        DataMeasuredFloat();
+        DataMeasuredFloat() : BaseInfoObject(TYPE_ID) {}
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
-        std::string GetValueAsString() const override;
 
-    private:
-        DataFloat mValue;
+        float val = 0.0;
+        // TODO ValueQuality
     };
 
     // Type 100: C_IC_NA_1 ////////////////////////////////////////////////////////////
     class DataInterrogationCommand : public BaseInfoObject
     {
     public:
-        static constexpr int TYPE_ID = IEC104::Type::C_IC_NA_1;
+        static constexpr int TYPE_ID = Type::C_IC_NA_1;
         static constexpr int DATA_SIZE = 1;
 
-        DataInterrogationCommand();
+        DataInterrogationCommand() : BaseInfoObject(TYPE_ID) {}
         void ReadFrom(ByteStream& arInput, int aAddressSize) override;
         void WriteTo(ByteStream& arOutput) const override;
-        std::string GetValueAsString() const override;
 
-    private:
-        DataEnum<InterrogationQualifierEnum> mValue;
+        InterrogationQualifierEnum val = InterrogationQualifier::UNUSED;
+        // TODO Check if members are correct
     };
 }
 #endif

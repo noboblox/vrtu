@@ -1,8 +1,8 @@
 #ifndef IEC104_ASDU_HPP_
 #define IEC104_ASDU_HPP_
 
-#include "core/data.hpp"
-#include "protocols/iec104/data104.hpp"
+
+#include <iterator>
 #include "protocols/iec104/infoobjects.hpp"
 
 class ByteStream;
@@ -36,26 +36,21 @@ namespace IEC104
         int mIOASize;
     };
 
-    class Asdu : public DataStruct
+    class Asdu
     {
     public:
-        using Iterator = DataArray<BaseInfoObject>::Iterator;
-
         Asdu(const AsduConfig& arConfig = AsduConfig::Defaults);
 
         void ReadFrom(ByteStream& arBuffer);
         void WriteTo(ByteStream& arBuffer) const;
 
-        TypeEnum GetType() const;
+        int GetType() const;
         int GetNumberOfInfoObjects() const noexcept;
 
-        bool IsSequence() const {return *mIsSequence;}
-        int GetObjectCount() const {return *mSize;}
-        ReasonCodeEnum GetReason() const {return *mReason;}
-        int GetAddress() const {return *mCommonAddress;}
-
-        Iterator Begin() const { return mObjects.Begin(); }
-        Iterator End()  const { return mObjects.End(); }
+        bool IsSequence() const {return mIsSequence;}
+        int GetObjectCount() const {return mSize;}
+        ReasonCodeEnum GetReason() const {return mReason;}
+        int GetAddress() const {return mCommonAddress;}
 
         // TODO
         bool HasMoreSpace() const;
@@ -68,13 +63,13 @@ namespace IEC104
     private:
         AsduConfig mConfig;
 
-        DataEnum<TypeEnum> mType;
-        DataUnsigned mSize;
-        DataBool   mIsSequence;
-        DataEnum<ReasonCodeEnum> mReason;
-        DataInt    mOrigin;
-        DataInt    mCommonAddress;
-        DataArray<BaseInfoObject> mObjects;
+        int mType = Type::UNDEFINED;
+        int mSize = 0;
+        bool mIsSequence = false;
+        ReasonCodeEnum mReason = ReasonCode::SPONTANEOUS;
+        int mOrigin = 0;
+        int mCommonAddress = 0;
+        std::vector<SharedInfoObject> mObjects;
     };
 }
 

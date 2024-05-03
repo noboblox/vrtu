@@ -23,26 +23,11 @@ find_package(Qt6
 qt_standard_project_setup()
 
 add_library(vrtucore STATIC
-    
-    errornomoredata.cpp 
-    errorunknowntype.cpp
-    core/data.cpp
-
-    external/json_wrapper.cpp
-
-    # headers (for proper display inside all IDEs)
-    errordecode.hpp
-    errornomoredata.hpp
-    errorunknowntype.hpp
-
     core/bytestream.hpp
-    core/data.hpp
     core/namedenum.hpp
     core/signal.hpp
     core/util.hpp
     core/watchdog.hpp
-
-    external/json_wrapper.hpp
 )
 
 target_include_directories(vrtucore PRIVATE
@@ -56,7 +41,6 @@ add_library(iec104 STATIC
     protocols/iec104/asdu.cpp
     protocols/iec104/connection.cpp
     protocols/iec104/connectionconfig.cpp
-    protocols/iec104/data104.cpp
     protocols/iec104/infoaddress.cpp
     protocols/iec104/infoobjects.cpp
     protocols/iec104/server.cpp
@@ -68,7 +52,6 @@ add_library(iec104 STATIC
     protocols/iec104/apdu.hpp
     protocols/iec104/asdu.hpp
     protocols/iec104/connection.hpp
-    protocols/iec104/data104.hpp
     protocols/iec104/infoaddress.hpp
     protocols/iec104/infoobjects.hpp
     protocols/iec104/quality.hpp

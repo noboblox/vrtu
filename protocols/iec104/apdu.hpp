@@ -131,7 +131,7 @@ namespace IEC104
          * @param [in] aValue Value to set
         */
         void WriteSequenceInternal(uint8_t* apDestination, int aValue) noexcept;
-        MessageType VerifyMessage() noexcept;
+        MessageType VerifyMessage() const noexcept;
 
         MessageType mType;
         Header mHeader;

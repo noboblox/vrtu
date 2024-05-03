@@ -9,15 +9,13 @@
 #include <cstdint>
 
 #include "core/bytestream.hpp"
-#include "errordecode.hpp"
 #include "protocols/iec104/104enums.hpp"
 #include "protocols/iec104/asdu.hpp"
 
 using VerifyFunc =  std::function<void(const IEC104::Asdu&)>;
 static void VerifyAsdu(const IEC104::Asdu& arAsdu, int aType, bool aIsSequence, int aObjectCount, int aReason, int aAddress)
 {
-    BOOST_CHECK_EQUAL(true, arAsdu.IsValid());
-    BOOST_CHECK_EQUAL(aType, static_cast<int> (arAsdu.GetType().GetValue()));
+    BOOST_CHECK_EQUAL(aType, arAsdu.GetType());
     BOOST_CHECK_EQUAL(aIsSequence, arAsdu.IsSequence());
     BOOST_CHECK_EQUAL(aObjectCount, arAsdu.GetObjectCount());
     BOOST_CHECK_EQUAL(aReason, (int) arAsdu.GetReason().GetValue());
