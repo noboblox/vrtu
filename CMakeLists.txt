@@ -16,8 +16,7 @@ find_package(Boost
 
 find_package(Qt6 
              REQUIRED COMPONENTS
-             Core
-             Widgets
+             Widgets LinguistTools
 )
 
 qt_standard_project_setup()
@@ -70,8 +69,14 @@ target_link_libraries(iec104
                      )
                           
 qt_add_executable(vrtu
-  app/vrtu.cpp
+  app/main.cpp
+  app/mainwindow.cpp
+  app/mainwindow.h
+  app/mainwindow.ui
 )
+
+qt_add_translations(vrtu
+    TS_FILES app/app_de_DE.ts)
 
 set_target_properties(vrtu PROPERTIES
     WIN32_EXECUTABLE ON
@@ -80,12 +85,14 @@ set_target_properties(vrtu PROPERTIES
 
 target_include_directories(vrtu PRIVATE
                            ${PROJECT_SOURCE_DIR}                           
-                           ${Boost_INCLUDE_DIRS})
+                           ${Boost_INCLUDE_DIRS}
+                           ${Qt6Widgets_INCLUDE_DIRS})
 
 target_link_libraries(vrtu PRIVATE
                       vrtucore
                       iec104
                       ${Boost_LIBRARIES}
+                      Qt6::Widgets
                      )
 
 # on unix systems boost has a dependency to pthread
