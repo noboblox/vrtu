@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "core/bytestream.hpp"
-#include "external/style.hpp"
 
 ErrorNoMoreData::ErrorNoMoreData(const ByteStream& arBuffer)
     : std::exception(),
@@ -56,12 +55,12 @@ std::ostream& ErrorNoMoreData::PrintError(std::ostream & arOutput) const
 {
     // Error message lines
     for (const auto& msg : mMsgLines)
-        arOutput << STYLE::red << msg  << "\n";
+        arOutput << msg  << "\n";
 
     static constexpr char DETAIL_INDENT[] = "    ";
 
     // Buffer position line
-    arOutput << STYLE::reset << DETAIL_INDENT;
+    arOutput << DETAIL_INDENT;
 
     for (int i = 0; i < mContextSize + 1; ++i)
         arOutput << " | " << std::setw(4) << (mBufferSize - mContextSize + i);
@@ -91,6 +90,6 @@ std::ostream& ErrorNoMoreData::PrintError(std::ostream & arOutput) const
     for (int i = 0; i < mContextSize; ++i)
         arOutput << "   " << std::setw(4) << " ";
 
-    arOutput << "   " << std::setw(4) << STYLE::red << "^^^" << STYLE::reset << "\n";
+    arOutput << "   " << std::setw(4) << "^^^" << "\n";
     return arOutput;
 }

@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include "core/bytestream.hpp"
-#include "external/style.hpp"
 
 namespace IEC104
 {
@@ -52,7 +51,7 @@ namespace IEC104
     std::ostream& ErrorUnknownType::PrintError(std::ostream& arOutput) const
     {
         // Error message lines
-        arOutput << STYLE::red << mErrorMsg << "\n";
+        arOutput << mErrorMsg << "\n";
 
         if (!mErrorSource.empty())
             arOutput << "While decoding element \"" << mErrorSource << "\"\n";
@@ -60,7 +59,7 @@ namespace IEC104
         static constexpr char DETAIL_INDENT[] = "    ";
 
         // Buffer position line
-        arOutput << STYLE::reset << DETAIL_INDENT;
+        arOutput << DETAIL_INDENT;
 
         for (int i = 0; i < mContextSize + 1; ++i)
             arOutput << " | " << std::setw(4) << (mErrorPos - mContextSize + i);
@@ -91,7 +90,7 @@ namespace IEC104
         for (int i = 0; i < mContextSize; ++i)
             arOutput << "   " << std::setw(4) << " ";
 
-        arOutput << "   " << std::setw(4) << STYLE::red << "^^^^" << STYLE::reset << "\n";
+        arOutput << "   " << std::setw(4) << "^^^^" << "\n";
         return arOutput;
     }
 }

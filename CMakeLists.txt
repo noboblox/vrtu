@@ -29,7 +29,6 @@ add_library(vrtucore STATIC
     core/data.cpp
 
     external/json_wrapper.cpp
-    external/style.cpp
 
     # headers (for proper display inside all IDEs)
     errordecode.hpp
@@ -44,7 +43,6 @@ add_library(vrtucore STATIC
     core/watchdog.hpp
 
     external/json_wrapper.hpp
-    external/style.hpp
 )
 
 target_include_directories(vrtucore PRIVATE

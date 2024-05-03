@@ -6,7 +6,6 @@
 #include <boost/asio/write.hpp>
 
 #include "core/bytestream.hpp"
-#include "external/style.hpp"
 #include "protocols/iec104/asdu.hpp"
 #include "protocols/iec104/infoobjects.hpp"
 
@@ -188,7 +187,7 @@ namespace IEC104
         TypeEnum type_id = arAsdu.GetType();
         int num_objects = arAsdu.GetNumberOfInfoObjects();
 
-        std::cout << STYLE::bright_cyan << " " << SUB_TREE_BRANCH_PREFIX << "[ASDU] : "
+        std::cout << " " << SUB_TREE_BRANCH_PREFIX << "[ASDU] : "
                   << type_id.GetLabel() << " (" << type_id.GetValue() << ") with " << num_objects << " info object";
         
         if (num_objects != 1)
@@ -203,8 +202,6 @@ namespace IEC104
             std::cout << IO_INDENTATION << SUB_TREE_BRANCH_PREFIX;
             PrintInfoObject(*it);
         }
-
-        std::cout << STYLE::reset;
     }
 
     void Connection::PrintInfoObject(const BaseInfoObject& arInfoObject) const
