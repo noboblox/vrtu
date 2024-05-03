@@ -4,7 +4,7 @@ project(vrtu)
 # for convenience
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 find_package(Boost 
@@ -13,10 +13,13 @@ find_package(Boost
              system
              unit_test_framework)
 
-find_package(#Qt5 
+find_package(Qt6 
              REQUIRED COMPONENTS
+             Core
              Widgets
 )
+
+qt_standard_project_setup()
 
 add_library(vrtucore SHARED
     
@@ -84,36 +87,22 @@ target_link_libraries(iec104
                       ${Boost_LIBRARIES}
                      )
                           
-add_executable(vrtu
+qt_add_executable(vrtu
   app/vrtu.cpp
-  
-  # todo
-  external/imgui/imgui_demo.cpp
-  
-  external/imgui/imgui.cpp
-  external/imgui/imgui_draw.cpp
-  external/imgui/imgui_tables.cpp
-  external/imgui/imgui_widgets.cpp
-  external/imgui/backends/imgui_impl_glfw.cpp
-  external/imgui/backends/imgui_impl_opengl3.cpp
+)
+
+set_target_properties(vrtu PROPERTIES
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
 )
 
 target_include_directories(vrtu PRIVATE
-                           ${PROJECT_SOURCE_DIR}
-                           ${PROJECT_SOURCE_DIR}/external/imgui
-                           ${PROJECT_SOURCE_DIR}/external/imgui/backends
-                           
-                           # todo
-                           ${PROJECT_SOURCE_DIR}/external/imgui/examples/example_glfw_opengl3
-                           
+                           ${PROJECT_SOURCE_DIR}                           
                            ${Boost_INCLUDE_DIRS})
 
-target_link_libraries(vrtu
+target_link_libraries(vrtu PRIVATE
                       vrtucore
                       iec104
-                      glfw
-                      GL
-                      dl
                       ${Boost_LIBRARIES}
                      )
 
@@ -122,7 +111,7 @@ if (NOT WIN32)
     target_link_libraries(iec104 pthread)
 endif()
 
-# enable warnings
+#enable warnings
 if(MSVC)
   target_compile_options(vrtu PRIVATE /W4)
 else()

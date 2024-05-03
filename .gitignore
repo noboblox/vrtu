@@ -1,6 +1,7 @@
 x64/*
 Debug/*
 Release/*
+build/**
 vrtu.cflags
 vrtu.config
 vrtu.creator
