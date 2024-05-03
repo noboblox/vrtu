@@ -6,6 +6,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
+set(Boost_USE_STATIC_LIBS   ON)
 
 find_package(Boost 
              REQUIRED COMPONENTS
@@ -21,7 +22,7 @@ find_package(Qt6
 
 qt_standard_project_setup()
 
-add_library(vrtucore SHARED
+add_library(vrtucore STATIC
     
     errornomoredata.cpp 
     errorunknowntype.cpp
@@ -50,7 +51,7 @@ target_include_directories(vrtucore PRIVATE
                            ${PROJECT_SOURCE_DIR} 
                            ${Boost_INCLUDE_DIRS})
                            
-add_library(iec104 SHARED
+add_library(iec104 STATIC
     
     protocols/iec104/104enums.cpp
     protocols/iec104/apdu.cpp
@@ -126,6 +127,7 @@ add_executable(test_vrtu
                tests/test_main.cpp
                tests/test_iec104.cpp
 )
+
 
 target_link_libraries(test_vrtu
                       iec104

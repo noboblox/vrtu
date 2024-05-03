@@ -24,7 +24,8 @@ namespace IEC104
         }
 
         std::stringstream msg;
-        msg << "[ERROR] Type id not supported: \"" << (*arType).GetLabel(true) << " (" << static_cast<int>((*arType).GetValue()) << ")\"";
+        // TODO
+        //msg << "[ERROR] Type id not supported: \"" << (*arType).GetLabel(true) << " (" << static_cast<int>((*arType).GetValue()) << ")\"";
         mErrorMsg = msg.str();
     }
 
