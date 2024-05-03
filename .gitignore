@@ -10,3 +10,5 @@ vrtu.includes
 .settings/language.settings.xml
 .project
 .cproject
+CMakeCache.txt
+CMakeFiles/**
