@@ -38,7 +38,7 @@ add_library(iec104 STATIC
     protocols/iec104/104enums.cpp
     protocols/iec104/apdu.cpp
     protocols/iec104/asdu.cpp
-    protocols/iec104/connection.cpp
+    protocols/iec104/link.cpp
     protocols/iec104/connectionconfig.cpp
     protocols/iec104/infoaddress.cpp
     protocols/iec104/infoobjects.cpp
@@ -50,7 +50,7 @@ add_library(iec104 STATIC
     protocols/iec104/104enums.hpp
     protocols/iec104/apdu.hpp
     protocols/iec104/asdu.hpp
-    protocols/iec104/connection.hpp
+    protocols/iec104/link.hpp
     protocols/iec104/infoaddress.hpp
     protocols/iec104/infoobjects.hpp
     protocols/iec104/quality.hpp

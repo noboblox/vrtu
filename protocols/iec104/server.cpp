@@ -32,9 +32,9 @@ namespace IEC104
     {
         if (!aError)
         {
-            mConnections.emplace_back(new Connection(mrContext, std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Connection& arConnection) {this->OnConnectionClosed(arConnection); }));
+            mConnections.emplace_back(new Link(mrContext, std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Link& arConnection) {this->OnConnectionClosed(arConnection); }));
 
-            Connection& r_new_connection = **mConnections.rbegin();
+            Link& r_new_connection = **mConnections.rbegin();
             SignalConnected(r_new_connection);
             r_new_connection.Start();
             StartAccept();
@@ -45,14 +45,14 @@ namespace IEC104
         }
     }
 
-    void Server::OnConnectionClosed(Connection& arClosed)
+    void Server::OnConnectionClosed(Link& arClosed)
     {
         SignalDisconnected(arClosed);
         // Safely delete later, not now!
         boost::asio::post([this, &arClosed]() {this->DeleteConnection(arClosed); });
     }
 
-    void Server::DeleteConnection(Connection& apClosed)
+    void Server::DeleteConnection(Link& apClosed)
     {
         auto it = mConnections.begin();
 

@@ -1,4 +1,4 @@
-#include "connection.hpp"
+#include "link.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -11,8 +11,8 @@
 
 namespace IEC104
 {
-    Connection::Connection(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
-                           const std::function<void(Connection&)>& arClosedHandler)
+    Link::Link(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+                           const std::function<void(Link&)>& arClosedHandler)
         : 
         mrContext(arContext),
         mSocket(std::move(arSocket)),
@@ -27,7 +27,7 @@ namespace IEC104
         mAsduConfirmationTrigger.SignalTimeout.Register([this] () { this->ConfirmReceivedAsdus(); });
     }
 
-    bool Connection::HandleSequences(const IEC104::Apdu& arReceived)
+    bool Link::HandleSequences(const IEC104::Apdu& arReceived)
     {
         bool success = true;
 
@@ -49,12 +49,12 @@ namespace IEC104
         return success;
     }
 
-    bool Connection::IsAsduConfirmThresholdReached() const noexcept
+    bool Link::IsAsduConfirmThresholdReached() const noexcept
     {
         return Apdu::SequenceDistance(mLastConfirmedByLocal, mNextReceiveId) >= mConfig.GetW();
     }
 
-    bool Connection::ConfirmReceivedAsdus()
+    bool Link::ConfirmReceivedAsdus()
     {
         AsduAcknowledgeApdu send(mNextReceiveId);
         boost::system::error_code ec;
@@ -69,19 +69,19 @@ namespace IEC104
         return true;
     }
 
-    void Connection::ReceiveNextMessage()
+    void Link::ReceiveNextMessage()
     {
         mCurrentSize = 0;
         ReadPartial(mReadBuffer.data(), IEC104::Apdu::GetHeaderSize());
     }
 
-    void Connection::ReadPartial(void* apDestination, size_t aTargetSize)
+    void Link::ReadPartial(void* apDestination, size_t aTargetSize)
     {
         mSocket.async_read_some(boost::asio::buffer(apDestination, aTargetSize),
             [this](const boost::system::error_code& arError, size_t aBytesReceived) {this->OnBytesReceived(arError, aBytesReceived); });
     }
 
-    void Connection::OnBytesReceived(const boost::system::error_code& arError, size_t aBytesReceived)
+    void Link::OnBytesReceived(const boost::system::error_code& arError, size_t aBytesReceived)
     {
         if (arError)
         {
@@ -105,7 +105,7 @@ namespace IEC104
     }
 
 
-    bool Connection::ProcessMessage()
+    bool Link::ProcessMessage()
     {
         ByteStream msg;
         msg.WriteData(mReadBuffer.data(), mCurrentSize);
@@ -120,7 +120,7 @@ namespace IEC104
         return true;
     }
 
-    void Connection::ConfirmService(const Apdu& arReceived)
+    void Link::ConfirmService(const Apdu& arReceived)
     {
         const Apdu confirmation = arReceived.CreateServiceConfirmation();
         boost::asio::write(mSocket,
@@ -128,7 +128,7 @@ namespace IEC104
     }
 
 
-    void Connection::RespondTo(const Apdu& arReceived)
+    void Link::RespondTo(const Apdu& arReceived)
     {
         if (arReceived.IsServiceRequest())
         {
@@ -140,18 +140,18 @@ namespace IEC104
         }
     }
 
-    void Connection::DeployMessage(const Apdu& arReceived)
+    void Link::DeployMessage(const Apdu& arReceived)
     {
         SignalReceivedApdu(*this, arReceived);
     }
 
-    void Connection::Start()
+    void Link::Start()
     {
         std::cout << "Connected to " << mSocket.remote_endpoint().address().to_string() << ":" << mSocket.remote_endpoint().port() << std::endl;
         ReceiveNextMessage();
     }
 
-    void Connection::CloseError(const std::string& arErrorMsg)
+    void Link::CloseError(const std::string& arErrorMsg)
     {
         std::cout << "[ERROR] " << arErrorMsg << std::endl;
 
@@ -161,7 +161,7 @@ namespace IEC104
         ClosedHandler(*this);
     }
 
-    Connection::~Connection()
+    Link::~Link()
     {
         std::cout << "Conection destroyed" << std::endl;
     }

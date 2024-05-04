@@ -17,13 +17,13 @@ namespace IEC104
 {
     class BaseInfoObject;
 
-    class Connection
+    class Link
     {
     public:
         // Create an connection with an connected socket
-        explicit Connection(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
-                            const std::function<void(Connection&)>& arClosedHandler);
-        ~Connection();
+        explicit Link(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
+                            const std::function<void(Link&)>& arClosedHandler);
+        ~Link();
 
         // Start message processing 
         void Start();
@@ -61,7 +61,7 @@ namespace IEC104
     private:
         boost::asio::io_context& mrContext;
         boost::asio::ip::tcp::socket mSocket;
-        std::function<void(Connection&)> ClosedHandler;
+        std::function<void(Link&)> ClosedHandler;
         std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
         size_t mCurrentSize;
         int mNextReceiveId, mNextSendId;
@@ -70,7 +70,7 @@ namespace IEC104
         ConnectionConfig mConfig;
         CORE::Watchdog mAsduConfirmationTrigger;
 
-        CORE::SignalEveryone<void, Connection&, const Apdu&> SignalReceivedApdu;
+        CORE::SignalEveryone<void, Link&, const Apdu&> SignalReceivedApdu;
     };
 }
 
