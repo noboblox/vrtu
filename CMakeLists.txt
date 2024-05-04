@@ -119,7 +119,7 @@ enable_testing()
 # Add a testing executable
 add_executable(test_vrtu 
                tests/test_main.cpp
-               tests/test_iec104.cpp
+               tests/test_encoding.cpp
 )
 
 
