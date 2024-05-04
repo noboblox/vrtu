@@ -84,7 +84,7 @@ namespace IEC104
         mSocket.close(ec);
     }
 
-    Link::~Link()
+    Link::~Link() noexcept
     {
         CloseSocket();
     }
