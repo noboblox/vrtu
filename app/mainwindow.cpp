@@ -1,6 +1,9 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QHostInfo>
+#include <boost/asio/ip/address.hpp>
+//#include <boost/asio/detached.hpp>
+#include "protocols/iec104/server.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     networkTick.callOnTimeout(this, &MainWindow::executeNetworkTasks);
     networkTick.start(20);
+
+    ui->editPort->setValidator(new QIntValidator(0, 65535, this));
 }
 
 MainWindow::~MainWindow()
@@ -35,6 +40,15 @@ void MainWindow::FillIpSelectBox()
 
 void MainWindow::onStartClicked()
 {
+    boost::system::error_code ec;
+    auto ip = boost::asio::ip::address::from_string(ui->cbIpSelect->currentData().toString().toStdString(), ec);
+
+    if (ec.failed() || !ui->editPort->hasAcceptableInput())
+        return;
+
+    auto port = ui->editPort->text().toInt();
+    //async::spawn(ctx, RunServer(ip, port), boost::asio::detached);
+
     ui->btStart->setEnabled(false);
     ui->btStop->setEnabled(true);
     ui->cbIpSelect->setEnabled(false);
@@ -48,6 +62,11 @@ void MainWindow::onStopClicked()
     ui->cbIpSelect->setEnabled(true);
     ui->editPort->setEnabled(true);
 }
+
+//boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address& ip, uint16_t port)
+//{
+//    server.reset(new IEC104::Server(ip, port));
+//}
 
 void MainWindow::executeNetworkTasks()
 {

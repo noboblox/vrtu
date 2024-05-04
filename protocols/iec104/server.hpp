@@ -1,8 +1,8 @@
 #ifndef IEC104_SERVER_HPP_
 #define IEC104_SERVER_HPP_
 
-#include <boost/cobalt.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/cobalt/promise.hpp>
 
 #include <cstdint>
 #include <memory>

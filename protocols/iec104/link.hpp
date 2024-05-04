@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/cobalt.hpp>
+#include <boost/cobalt/promise.hpp>
 #include "core/signal.hpp"
 
 #include "protocols/iec104/apdu.hpp"
