@@ -6,10 +6,13 @@ namespace IEC104
     class ConnectionConfig
     {
     public:
-        static const ConnectionConfig DefaultConnectionConfig;
+        ConnectionConfig();
+        ConnectionConfig(int aT0, int aT1, int aT2, int aT3, int aK, int aW);
 
-        ConnectionConfig(int aT0, int aT1, int aT2,
-                         int aT3, int aK, int aW);
+        ConnectionConfig(const ConnectionConfig&) = default;
+        ConnectionConfig(ConnectionConfig&&) = default;
+        ConnectionConfig& operator=(const ConnectionConfig&) = default;
+        ConnectionConfig& operator=(ConnectionConfig&&) = default;
 
         void SetT0(int aT0);
         int GetT0() const noexcept { return mT0; }
@@ -30,7 +33,7 @@ namespace IEC104
         int GetW() const noexcept { return mW; }
 
     private:
-        int mT0; //!< Active connect timeout [1s - 255s]
+        int mT0;
         int mT1;
         int mT2;
         int mT3;

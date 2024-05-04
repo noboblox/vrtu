@@ -4,9 +4,10 @@
 
 namespace IEC104
 {
-    const ConnectionConfig ConnectionConfig::DefaultConnectionConfig =
-        ConnectionConfig(30, 15, 10, 30, 12, 8);
-
+    ConnectionConfig::ConnectionConfig()
+        : ConnectionConfig(30, 15, 10, 20, 12, 8)
+    {
+    }
 
     ConnectionConfig::ConnectionConfig(int aT0, int aT1, int aT2,
                                        int aT3, int aK, int aW)

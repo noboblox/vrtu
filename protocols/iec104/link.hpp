@@ -1,17 +1,17 @@
 #ifndef IEC104_CONNECTION_HPP_
 #define IEC104_CONNECTION_HPP_
 
-#include <array>
 #include <cstdint>
-#include <functional>
 
 #include <boost/asio/ip/tcp.hpp>
-
-#include "core/watchdog.hpp"
+#include <boost/cobalt.hpp>
 #include "core/signal.hpp"
 
 #include "protocols/iec104/apdu.hpp"
 #include "protocols/iec104/connectionconfig.hpp"
+
+namespace async = boost::cobalt;
+namespace asio = boost::asio;
 
 namespace IEC104
 {
@@ -20,57 +20,55 @@ namespace IEC104
     class Link
     {
     public:
+        /// Signal is invoked, when either IsActive or IsConnected changes
+        CORE::SignalEveryone<void, Link&> SignalStateChanged;
+        /// Signal is invoked after a connection tick has finished
+        CORE::SignalEveryone<void, Link&> SignalTickFinished;
+        /// Signal is invoked after an APDU was sent
+        CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduSent;
+        /// Signal is invoked after an APDU was received
+        CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduReceived;
+
+        enum class Mode
+        {
+            Master,
+            Slave
+        };
+
         // Create an connection with an connected socket
-        explicit Link(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
-                            const std::function<void(Link&)>& arClosedHandler);
-        ~Link();
+        explicit Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode, const ConnectionConfig& arConfig);
+        explicit Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode);
+
+        ~Link() noexcept;
 
         // Start message processing 
-        void Start();
+        async::promise<void> Run();
 
-        bool ConfirmReceivedAsdus();
+        // Single tick of message processing
+        async::promise<void> Tick();
+        // Cancel message processing
+        void Cancel();
 
-    private:
-        // Start an async read of the next APDU -> ReadPartial()
-        void ReceiveNextMessage();
+        const ConnectionConfig& Config() const noexcept { return mConfig; }
 
-        // Read a partial message from the socket -> OnBytesReceived
-        void ReadPartial(void* apDestination, size_t aTargetSize);
-        
-        // Check the APDU for completion
-        //  - If the message is incompleted, another async read is requested via -> ReadPartial()
-        //  - If the message is complete, it's proceesed via -> ProcessMessage() 
-        //    and the next message is expected afterwards -> ReceiveNextMessage()
-        void OnBytesReceived(const boost::system::error_code& arError, size_t aBytesReceived);
-        
-        // Decode the message and respond confirmations
-        bool ProcessMessage();
-        void RespondTo(const Apdu& arReceived);
-        void DeployMessage(const Apdu& arReceived);
-
-        // Verify that a message is expected and update sequence counters
-        bool HandleSequences(const IEC104::Apdu& arReceived);
-        bool IsAsduConfirmThresholdReached() const noexcept;
-        
-        void ConfirmService(const Apdu& arReceived);
-
-        // Close the connection with an error message
-        void CloseError(const std::string& arErrorMsg);
-
+        bool IsRunning() const noexcept { return mIsRunning; }
+        bool IsActive() const noexcept { return mIsActive; }
+        bool IsMaster() const noexcept { return mIsMaster; }
 
     private:
-        boost::asio::io_context& mrContext;
+        async::promise<void> Delay(std::chrono::milliseconds msec);
+        void setRunning(bool value);
+        void setActive(bool value);
+        void CloseSocket();
+
+    private:
+        bool mIsMaster;
+        bool mIsRunning = false;
+        bool mIsActive = false;
+        bool mNeedClose = false;
+
         boost::asio::ip::tcp::socket mSocket;
-        std::function<void(Link&)> ClosedHandler;
-        std::array<uint8_t, 256> mReadBuffer, mWriteBuffer;
-        size_t mCurrentSize;
-        int mNextReceiveId, mNextSendId;
-        int mLastConfirmedByLocal, mLastConfirmedByRemote;
-        Apdu mReceived;
         ConnectionConfig mConfig;
-        CORE::Watchdog mAsduConfirmationTrigger;
-
-        CORE::SignalEveryone<void, Link&, const Apdu&> SignalReceivedApdu;
     };
 }
 

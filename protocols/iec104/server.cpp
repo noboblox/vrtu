@@ -1,68 +1,68 @@
 #include "protocols/iec104/server.hpp"
-
-#include <iostream>
+#include <list>
 
 namespace IEC104
 {
-    Server::Server(boost::asio::io_context& arContext, const boost::asio::ip::address& arIP, uint16_t aListeningPort)
-        : mrContext(arContext), mpAcceptingSocket(nullptr)
+    Server::Server(const asio::ip::address& ip, uint16_t port)
+        : mLocalAddr{ip, port}
     {
-        // A tcp endpoint for a specific interface
-        boost::asio::ip::tcp::endpoint server_endpoint(arIP, aListeningPort);
-        mpAcceptingSocket.reset(new boost::asio::ip::tcp::acceptor(mrContext, server_endpoint));
-
     }
 
-    void Server::Start()
+    Server::~Server()
     {
-        StartAccept();
     }
 
-
-    void Server::StartAccept()
+    async::promise<void> Server::Run()
     {
-        mpAcceptingSocket->async_accept(
-            [this](boost::system::error_code aError, boost::asio::ip::tcp::socket&& arNewSocket)
+        asio::ip::tcp::acceptor listener = asio::ip::tcp::acceptor({ co_await async::this_coro::executor }, mLocalAddr);
+
+        try
+        {
+            setRunning(true);
+            std::list<async::promise<void>> promises;
+
+            promises.push_back(AcceptOne(listener));
+
+            while (!mNeedClose)
             {
-                this->FinishAccept(aError, std::move(arNewSocket));
-            });
-    }
+                auto id = co_await async::race(promises);
 
-    void Server::FinishAccept(boost::system::error_code aError, boost::asio::ip::tcp::socket&& arNewSocket)
-    {
-        if (!aError)
-        {
-            mConnections.emplace_back(new Link(mrContext, std::move(arNewSocket), ConnectionConfig::DefaultConnectionConfig, [this](Link& arConnection) {this->OnConnectionClosed(arConnection); }));
-
-            Link& r_new_connection = **mConnections.rbegin();
-            SignalConnected(r_new_connection);
-            r_new_connection.Start();
-            StartAccept();
-        }
-        else
-        {
-            std::cout << aError.message() << std::endl;
-        }
-    }
-
-    void Server::OnConnectionClosed(Link& arClosed)
-    {
-        SignalDisconnected(arClosed);
-        // Safely delete later, not now!
-        boost::asio::post([this, &arClosed]() {this->DeleteConnection(arClosed); });
-    }
-
-    void Server::DeleteConnection(Link& apClosed)
-    {
-        auto it = mConnections.begin();
-
-        for (; it != mConnections.end(); ++it)
-        {
-            if (it->get() == &apClosed)
-            {
-                mConnections.erase(it);
-                break;
+                if (id == 0) // Accept was first to be added and should always be on front
+                    promises.push_back(mLinks.back()->Run());
+                else
+                {
+                    // can't call std::vector::erase because promises are not assignable (bug in boost::cobalt)
+                    // see: https://github.com/boostorg/cobalt/issues/159
+                    // so let's use a list until this is resolved
+                    
+                    auto it = promises.begin();
+                    std::advance(it, id);
+                    promises.erase(it);
+                }
             }
         }
+        catch (...) {}
+
+        listener.close();
+        setRunning(false);
+        co_return;
+    }
+
+    async::promise<void> Server::AcceptOne(asio::ip::tcp::acceptor& listener)
+    {
+        auto peer = co_await listener.async_accept(async::use_op);
+        mLinks.emplace_back(std::make_unique<Link>(std::move(peer), Link::Mode::Slave));
+        co_return;
+    }
+
+    void Server::setRunning(bool value)
+    {
+        mIsRunning = value;
+        SignalServerStateChanged(*this);
+    }
+
+    void Server::Cancel()
+    {
+        mNeedClose = true;
     }
 }

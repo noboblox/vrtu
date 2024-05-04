@@ -11,158 +11,81 @@
 
 namespace IEC104
 {
-    Link::Link(boost::asio::io_context& arContext, boost::asio::ip::tcp::socket&& arSocket, const ConnectionConfig& arConfig,
-                           const std::function<void(Link&)>& arClosedHandler)
-        : 
-        mrContext(arContext),
-        mSocket(std::move(arSocket)),
-        ClosedHandler(arClosedHandler),
-        mReadBuffer(), mWriteBuffer(),
-        mCurrentSize(0),
-        mNextReceiveId(0), mNextSendId(0),
-        mLastConfirmedByLocal(0), mLastConfirmedByRemote(0),
-        mConfig(arConfig),
-        mAsduConfirmationTrigger(mrContext, boost::posix_time::seconds(mConfig.GetT2()))
+    Link::Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode, const ConnectionConfig& arConfig)
+        : mIsMaster(mode == Mode::Master)
+        , mSocket(std::move(arSocket))
+        , mConfig(arConfig)
     {
-        mAsduConfirmationTrigger.SignalTimeout.Register([this] () { this->ConfirmReceivedAsdus(); });
     }
 
-    bool Link::HandleSequences(const IEC104::Apdu& arReceived)
+    Link::Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode)
+        : Link(std::move(arSocket), mode, ConnectionConfig())
     {
-        bool success = true;
+    }
 
-        if (arReceived.HasSendCounter())
+    async::promise<void> Link::Run()
+    {
+        try
         {
-            if (mNextReceiveId == arReceived.GetSendCounter())
+            setRunning(true);
+            while (!mNeedClose)
             {
-                IEC104::Apdu::IncrementSequence(mNextReceiveId);
-                mAsduConfirmationTrigger.StartOrContinue();
+                auto promiseTick = Tick();
+                auto promiseDelay = Delay(std::chrono::milliseconds(30));
+                async::join(promiseTick, promiseDelay);
             }
-            else
-                success = false;
         }
+        catch (...) {}
 
-        if (arReceived.HasReceiveCounter())
-        {
-            mLastConfirmedByRemote = arReceived.GetReceiveCounter();
-        }
-        return success;
+        setRunning(false);
+        CloseSocket();
+        co_return;
     }
 
-    bool Link::IsAsduConfirmThresholdReached() const noexcept
+    async::promise<void> Link::Tick()
     {
-        return Apdu::SequenceDistance(mLastConfirmedByLocal, mNextReceiveId) >= mConfig.GetW();
+        co_return;
     }
 
-    bool Link::ConfirmReceivedAsdus()
+    async::promise<void> Delay(std::chrono::milliseconds msec)
     {
-        AsduAcknowledgeApdu send(mNextReceiveId);
-        boost::system::error_code ec;
-        boost::asio::write(mSocket, boost::asio::buffer(send.GetData(), IEC104::Apdu::GetHeaderSize()), ec);
-
-        if (ec)
-            return false;
-
-        mLastConfirmedByLocal = mNextReceiveId;
-        mAsduConfirmationTrigger.Stop();
-
-        return true;
+        asio::steady_timer t(co_await asio::this_coro::executor, msec);
+        co_await t.async_wait(async::use_op);
+        co_return;
     }
 
-    void Link::ReceiveNextMessage()
+    void Link::Cancel()
     {
-        mCurrentSize = 0;
-        ReadPartial(mReadBuffer.data(), IEC104::Apdu::GetHeaderSize());
+        mNeedClose = true;
     }
 
-    void Link::ReadPartial(void* apDestination, size_t aTargetSize)
+    void Link::setRunning(bool value)
     {
-        mSocket.async_read_some(boost::asio::buffer(apDestination, aTargetSize),
-            [this](const boost::system::error_code& arError, size_t aBytesReceived) {this->OnBytesReceived(arError, aBytesReceived); });
+        mIsRunning = value;
+
+        if (value == false)
+            setActive(value);
+        else
+            SignalStateChanged(*this);
     }
 
-    void Link::OnBytesReceived(const boost::system::error_code& arError, size_t aBytesReceived)
+    void Link::setActive(bool value)
     {
-        if (arError)
-        {
-            CloseError(arError.message());
+        mIsActive = value;
+        SignalStateChanged(*this);
+    }
+
+    void Link::CloseSocket()
+    {
+        if (!mSocket.is_open())
             return;
-        }
-
-        mCurrentSize += aBytesReceived;
-
-        if (mCurrentSize < IEC104::Apdu::GetHeaderSize())
-            ReadPartial(&mReadBuffer[mCurrentSize], IEC104::Apdu::GetHeaderSize() - mCurrentSize);
-        else if (mCurrentSize < IEC104::Apdu::GetMessageSize(mReadBuffer.data()))
-            ReadPartial(&mReadBuffer[mCurrentSize], IEC104::Apdu::GetMessageSize(mReadBuffer.data()) - mCurrentSize);
-        else if (mCurrentSize == IEC104::Apdu::GetMessageSize(mReadBuffer.data()))
-        {
-            ProcessMessage();
-            ReceiveNextMessage();
-        }
-
-        return; // Error
-    }
-
-
-    bool Link::ProcessMessage()
-    {
-        ByteStream msg;
-        msg.WriteData(mReadBuffer.data(), mCurrentSize);
-        mReceived.ReadFrom(msg);
-
-        if (!mReceived.IsValid() || !HandleSequences(mReceived))
-            return false;
-
-        RespondTo(mReceived);
-        DeployMessage(mReceived);
-
-        return true;
-    }
-
-    void Link::ConfirmService(const Apdu& arReceived)
-    {
-        const Apdu confirmation = arReceived.CreateServiceConfirmation();
-        boost::asio::write(mSocket,
-            boost::asio::buffer(confirmation.GetData(), confirmation.GetHeaderSize()));
-    }
-
-
-    void Link::RespondTo(const Apdu& arReceived)
-    {
-        if (arReceived.IsServiceRequest())
-        {
-            ConfirmService(arReceived);
-        }
-        else if (IsAsduConfirmThresholdReached())
-        {
-            ConfirmReceivedAsdus();
-        }
-    }
-
-    void Link::DeployMessage(const Apdu& arReceived)
-    {
-        SignalReceivedApdu(*this, arReceived);
-    }
-
-    void Link::Start()
-    {
-        std::cout << "Connected to " << mSocket.remote_endpoint().address().to_string() << ":" << mSocket.remote_endpoint().port() << std::endl;
-        ReceiveNextMessage();
-    }
-
-    void Link::CloseError(const std::string& arErrorMsg)
-    {
-        std::cout << "[ERROR] " << arErrorMsg << std::endl;
 
         boost::system::error_code ec;
         mSocket.close(ec);
-
-        ClosedHandler(*this);
     }
 
     Link::~Link()
     {
-        std::cout << "Conection destroyed" << std::endl;
+        CloseSocket();
     }
 }

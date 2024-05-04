@@ -1,7 +1,7 @@
 #ifndef IEC104_SERVER_HPP_
 #define IEC104_SERVER_HPP_
 
-#include <boost/asio/io_context.hpp>
+#include <boost/cobalt.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 #include <cstdint>
@@ -10,6 +10,9 @@
 
 #include "protocols/iec104/link.hpp"
 
+namespace asio = boost::asio;
+namespace async = boost::cobalt;
+
 namespace IEC104
 {
     class Apdu;
@@ -17,29 +20,33 @@ namespace IEC104
     class Server
     {
     public:
-        explicit Server(boost::asio::io_context& arContext, const boost::asio::ip::address& arIP, uint16_t aPort = 2404);
-        void Start();
+        explicit Server(const asio::ip::address& ip, uint16_t port = 2404);
+        ~Server();
 
-        CORE::SignalEveryone<void, Link&> SignalConnected;
-        CORE::SignalEveryone<void, Link&> SignalDisconnected;
-        CORE::SignalEveryone<void, Link&> SignalStartDT;
-        CORE::SignalEveryone<void, Link&> SignalStopDT;
+        async::promise<void> Run();
+        void Cancel();
 
-        CORE::SignalEveryone<void, Link&, const Apdu&> SignalApdu;
-        CORE::SignalEveryone<void, Link&, const Asdu&> SignalAsdu;
+        // Forwarded from child links
+        CORE::SignalEveryone<void, Link&> SignalLinkStateChanged;
+        // Forwarded from child links
+        CORE::SignalEveryone<void, Link&> SignalLinkTickFinished;
+        // Forwarded from child links
+        CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduSent;
+        // Forwarded from child links
+        CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduReceived;
+        // Signal is invoked when the server starts or stops 
+        CORE::SignalEveryone<void, Server&> SignalServerStateChanged;
 
     private:
-        void StartAccept();
-        void FinishAccept(boost::system::error_code aError, boost::asio::ip::tcp::socket&& arNewSocket);
-
-        void OnConnectionClosed(Link& arClosed);
-        void DeleteConnection(Link& apClosed);
+        void setRunning(bool value);
+        async::promise<void> AcceptOne(asio::ip::tcp::acceptor& listener);
+        async::promise<void> RunLink();
 
     private:
-        boost::asio::io_context& mrContext;
-        std::unique_ptr<boost::asio::ip::tcp::acceptor> mpAcceptingSocket;
-
-        std::vector<std::unique_ptr<Link>> mConnections;
+        bool mIsRunning = false;
+        bool mNeedClose = false;
+        asio::ip::tcp::endpoint mLocalAddr;
+        std::vector<std::unique_ptr<Link>> mLinks;
     };
 }
 #endif
