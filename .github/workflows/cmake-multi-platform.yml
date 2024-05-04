@@ -63,7 +63,6 @@ jobs:
         platform: x64
         configuration: Release
         static: 1
-        static-runtime: 1
     
     - name: Show Boost paths
       run: |
