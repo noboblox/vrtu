@@ -40,7 +40,6 @@ namespace IEC104
     private:
         void setRunning(bool value);
         async::promise<void> AcceptOne(asio::ip::tcp::acceptor& listener);
-        async::promise<void> RunLink();
 
     private:
         bool mIsRunning = false;
