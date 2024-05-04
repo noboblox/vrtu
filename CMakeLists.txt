@@ -16,7 +16,7 @@ find_package(Boost
 
 find_package(Qt6 
              REQUIRED COMPONENTS
-             Widgets LinguistTools
+             Widgets LinguistTools Network
 )
 
 qt_standard_project_setup()
@@ -87,7 +87,9 @@ set_target_properties(vrtu PROPERTIES
 target_include_directories(vrtu PRIVATE
                            ${PROJECT_SOURCE_DIR}                           
                            ${Boost_INCLUDE_DIRS}
-                           ${Qt6Widgets_INCLUDE_DIRS})
+                           ${Qt6Widgets_INCLUDE_DIRS}
+                           ${Qt6Network_INCLUDE_DIRS}
+)
 
 qt_add_resources(vrtu app/data.qrc)
 
@@ -96,6 +98,7 @@ target_link_libraries(vrtu PRIVATE
                       iec104
                       ${Boost_LIBRARIES}
                       Qt6::Widgets
+                      Qt6::Network
                      )
 
 # on unix systems boost has a dependency to pthread
