@@ -59,7 +59,7 @@ jobs:
       uses: egor-tensin/build-boost@v1
       with:
         version: 1.85.0
-        libraries: date_time system unit_test_framework
+        libraries: date_time system test
         platform: x64
         configuration: Release
         static: 1
