@@ -56,6 +56,7 @@ add_library(iec104 STATIC
     protocols/iec104/infoobjects.hpp
     protocols/iec104/quality.hpp
     protocols/iec104/reason.hpp
+    protocols/iec104/sequence.hpp
     protocols/iec104/server.hpp
 )
 
