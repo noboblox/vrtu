@@ -6,6 +6,8 @@
 #include <boost/cobalt/spawn.hpp>
 #include <boost/cobalt/task.hpp>
 
+#include "protocols/iec104/apdu.hpp"
+#include "protocols/iec104/link.hpp"
 #include "protocols/iec104/server.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -69,8 +71,46 @@ void MainWindow::onStopClicked()
 boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address ip, uint16_t port)
 {
     server.reset(new IEC104::Server(ip, port));
+    server->SignalApduReceived      .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduReceived(l, msg);    });
+    server->SignalApduSent          .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduSent(l, msg);        });
+    server->SignalLinkStateChanged  .Register([this](IEC104::Link& l)                          { OnLinkStateChanged(l);     });
+    server->SignalLinkTickFinished  .Register([this](IEC104::Link& l)                          { OnLinkTickFinished(l);     });
+    server->SignalServerStateChanged.Register([this](IEC104::Server& s)                        { OnServerStartedStopped(s); });
+
     co_await server->Run();
     co_return;
+}
+
+
+
+void MainWindow::OnLinkStateChanged(IEC104::Link& l)
+{
+    if (1)
+        return; // debug stub
+}
+
+void MainWindow::OnLinkTickFinished(IEC104::Link& l)
+{
+    if (1)
+        return; // debug stub
+}
+
+void MainWindow::OnApduReceived(IEC104::Link& l, const IEC104::Apdu& msg)
+{
+    if (1)
+        return; // debug stub
+}
+
+void MainWindow::OnApduSent(IEC104::Link& l, const IEC104::Apdu& msg)
+{
+    if (1)
+        return; // debug stub
+}
+
+void MainWindow::OnServerStartedStopped(IEC104::Server& s)
+{
+    if (1)
+        return; // debug stub
 }
 
 void MainWindow::executeNetworkTasks()

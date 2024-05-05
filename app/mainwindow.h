@@ -11,6 +11,8 @@
 
 namespace IEC104
 {
+    class Apdu;
+    class Link;
     class Server;
 }
 
@@ -35,6 +37,12 @@ public slots:
 
 private:
     boost::cobalt::task<void> RunServer(const boost::asio::ip::address ip, uint16_t port);
+
+    void OnLinkStateChanged(IEC104::Link& l);
+    void OnLinkTickFinished(IEC104::Link& l);
+    void OnApduReceived(IEC104::Link& l, const IEC104::Apdu& msg);
+    void OnApduSent(IEC104::Link& l, const IEC104::Apdu& msg);
+    void OnServerStartedStopped(IEC104::Server& s);
 
 private:
     QTimer networkTick;
