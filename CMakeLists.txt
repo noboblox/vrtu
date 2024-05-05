@@ -122,6 +122,7 @@ enable_testing()
 add_executable(test_vrtu 
                tests/test_main.cpp
                tests/test_encoding.cpp
+               tests/test_sequence.cpp
 )
 
 

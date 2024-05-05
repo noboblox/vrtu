@@ -14,6 +14,11 @@ public:
     explicit ByteStream(const uint8_t* apBegin, const uint8_t* apEnd)
         : mIterator(0), mBuffer(apBegin, apEnd) {}
 
+    explicit ByteStream(std::initializer_list<uint8_t> l) 
+        : mIterator(0), mBuffer(l)
+    {
+    }
+
     /* Buffer status API (for error handling) */
 
     /// Overall size of the internal buffer

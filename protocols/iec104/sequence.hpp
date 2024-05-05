@@ -1,6 +1,7 @@
 #ifndef IEC104_SEQUENCE_HPP_
 #define IEC104_SEQUENCE_HPP_
 
+#include <ostream>
 #include "core/bytestream.hpp"
 
 namespace IEC104
@@ -18,6 +19,12 @@ namespace IEC104
 			high <<= 7;
 
 			mValue = low + high;
+		}
+
+		explicit Sequence(int value) {
+			if (value > MAX_SEQ || value < 0)
+				throw std::invalid_argument("value out of range");
+			mValue = value;
 		}
 
 		explicit Sequence() : mValue(0) {}
@@ -45,7 +52,7 @@ namespace IEC104
 		}
 
 		inline Sequence& operator--() noexcept {
-			mValue > 0 ? --mValue : mValue = 0;
+			mValue > 0 ? --mValue : mValue = MAX_SEQ;
 			return *this;
 		}
 
@@ -61,27 +68,27 @@ namespace IEC104
 			return copy;
 		}
 
-		inline bool operator==(Sequence other) {
+		inline bool operator==(Sequence other) const noexcept {
 			return mValue == other.mValue;
 		}
 
-		inline bool operator!=(Sequence other) {
+		inline bool operator!=(Sequence other) const noexcept {
 			return !operator==(other);
 		}
 
-		inline bool operator<(Sequence other) {
+		inline bool operator<(Sequence other) const noexcept {
 			return Distance(other) > 0;
 		}
 
-		inline bool operator>=(Sequence other) {
+		inline bool operator>=(Sequence other) const noexcept {
 			return !operator<(other);
 		}
 
-		inline bool operator>(Sequence other) {
-			return other.operator<(other);
+		inline bool operator>(Sequence other) const noexcept {
+			return other.operator<(*this);
 		}
 
-		inline bool operator<=(Sequence other) {
+		inline bool operator<=(Sequence other) const noexcept {
 			return !operator>(other);
 		}
 
@@ -98,9 +105,9 @@ namespace IEC104
 			int distance_overflow;
 
 			if (seq_from < seq_to)
-				distance_overflow = seq_to - (seq_from + MAX_SEQ);
+				distance_overflow = seq_to - (seq_from + MAX_SEQ + 1);
 			else
-				distance_overflow = (seq_to + MAX_SEQ) - seq_from;
+				distance_overflow = (seq_to + MAX_SEQ + 1) - seq_from;
 
 			if (std::abs(distance_normal) < std::abs(distance_overflow))
 				return distance_normal;
@@ -111,6 +118,10 @@ namespace IEC104
 	private:
 		int mValue;
 	};
+
+	std::ostream& operator<<(std::ostream& os, const Sequence& obj) {
+		return os << obj.Value();
+	}
 }
 
 
