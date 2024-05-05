@@ -13,50 +13,76 @@ BOOST_AUTO_TEST_CASE(read_sequence_from_stream)
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x7FFF);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0xFE);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0xFF);
+		BOOST_REQUIRE_EQUAL(Sequence(0xFF, 0xFF).Value(), 0x7FFF);
+		BOOST_REQUIRE_EQUAL(Sequence(0xFF, 0xFF).EncodedLowByte(), 0xFE);
+		BOOST_REQUIRE_EQUAL(Sequence(0xFF, 0xFF).EncodedHighByte(), 0xFF);
 	}
 	{
 		ByteStream data{ 0x00, 0x00 };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x0000);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x00);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0x00).Value(), 0x0000);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0x00).EncodedLowByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0x00).EncodedHighByte(), 0x00);
 	}
 	{
 		ByteStream data{ 0x01, 0x00 };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x0000);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x00);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x01, 0x00).Value(), 0x0000);
+		BOOST_REQUIRE_EQUAL(Sequence(0x01, 0x00).EncodedLowByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x01, 0x00).EncodedHighByte(), 0x00);
 	}
 	{
 		ByteStream data{ 0x03, 0x00 };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x0001);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x02);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x03, 0x00).Value(), 0x0001);
+		BOOST_REQUIRE_EQUAL(Sequence(0x03, 0x00).EncodedLowByte(), 0x02);
+		BOOST_REQUIRE_EQUAL(Sequence(0x03, 0x00).EncodedHighByte(), 0x00);
 	}
 	{
 		ByteStream data{ 0x02, 0x00 };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x0001);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x02);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x02, 0x00).Value(), 0x0001);
+		BOOST_REQUIRE_EQUAL(Sequence(0x02, 0x00).EncodedLowByte(), 0x02);
+		BOOST_REQUIRE_EQUAL(Sequence(0x02, 0x00).EncodedHighByte(), 0x00);
 	}
 	{
 		ByteStream data{ 0x05, 0x00 };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x0002);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x04);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x05, 0x00).Value(), 0x0002);
+		BOOST_REQUIRE_EQUAL(Sequence(0x05, 0x00).EncodedLowByte(), 0x04);
+		BOOST_REQUIRE_EQUAL(Sequence(0x05, 0x00).EncodedHighByte(), 0x00);
 	}
 	{
 		ByteStream data{ 0x00, 0xFF };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x7F80);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0x00);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0xFF);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0xFF).Value(), 0x7F80);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0xFF).EncodedLowByte(), 0x00);
+		BOOST_REQUIRE_EQUAL(Sequence(0x00, 0xFF).EncodedHighByte(), 0xFF);
 	}
 	{
 		ByteStream data{ 0xF0, 0x0F };
 		BOOST_REQUIRE_EQUAL(Sequence(data).Value(), 0x07F8);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedLowByte(), 0xF0);
 		BOOST_REQUIRE_EQUAL(Sequence(data).EncodedHighByte(), 0x0F);
+		BOOST_REQUIRE_EQUAL(Sequence(0xF0, 0x0F).Value(), 0x07F8);
+		BOOST_REQUIRE_EQUAL(Sequence(0xF0, 0x0F).EncodedLowByte(), 0xF0);
+		BOOST_REQUIRE_EQUAL(Sequence(0xF0, 0x0F).EncodedHighByte(), 0x0F);
 	}
+
 }
+
 
 BOOST_AUTO_TEST_CASE(sequence_construction_in_range_enforced)
 {

@@ -11,14 +11,23 @@ namespace IEC104
 	public:
 		static constexpr int MAX_SEQ = 0x7FFF;
 
-		explicit Sequence(ByteStream from) {
+		explicit Sequence(ByteStream from)
+		// TODO Cannot use nested constructor because MSVC compiler bug: https://stackoverflow.com/questions/77910284/members-wrongly-initialized-in-nested-aggregate-msvc
+		//	: Sequence(from.ReadByte(), from.ReadByte())
+		{
 			int low = from.ReadByte();
 			low >>= 1;
 
 			int high = from.ReadByte();
 			high <<= 7;
 
-			mValue = low + high;
+			mValue = high + low;
+		}
+
+		explicit Sequence(uint8_t low, uint8_t high) {
+			mValue = high;
+			mValue <<= 7;
+			mValue += (low >> 1);
 		}
 
 		explicit Sequence(int value) {

@@ -70,6 +70,12 @@ public:
         return *ReadData(1);
     }
 
+    void ReadInto(uint8_t* dest, size_t count)
+    {
+        auto data = ReadData(count);
+        std::memcpy(dest, data, count);
+    }
+
     /*
      * @brief Read one or multiple bytes and interpret them as the provided type 
      * 
@@ -108,6 +114,13 @@ public:
             mBuffer.reserve(mBuffer.size() + aBytes);
             mBuffer.insert(mBuffer.end(), apData, apData + aBytes);
         }
+    }
+
+    uint8_t PeekAt(size_t index) const {
+        if (RemainingBytes() <= index)
+            throw std::out_of_range("no data at requested index");
+
+        return Iterator()[index];
     }
 
 private:

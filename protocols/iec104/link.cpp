@@ -45,6 +45,7 @@ namespace IEC104
 
     async::promise<void> Link::Tick()
     {
+
         co_return;
     }
 
@@ -58,6 +59,24 @@ namespace IEC104
     void Link::Cancel()
     {
         mNeedClose = true;
+    }
+
+    async::promise<void> Link::Start()
+    {
+        co_await ActivateService(Apdu::STARTDT_ACT);
+        co_return;
+    }
+
+    async::promise<void> Link::Stop()
+    {
+        co_await ActivateService(Apdu::STOPDT_ACT);
+        co_return;
+    }
+
+    async::promise<void> Link::Test()
+    {
+        co_await ActivateService(Apdu::TESTFR_ACT);
+        co_return;
     }
 
     void Link::setRunning(bool value)

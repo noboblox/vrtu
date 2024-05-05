@@ -2,146 +2,64 @@
 #define IEC104_APDU_HPP_
 
 #include <cstdint>
-#include <memory>
-#include <string>
+#include <optional>
+#include "protocols/iec104/sequence.hpp"
+#include "protocols/iec104/servicetype.hpp"
 
 class ByteStream;
 
 namespace IEC104
 {
-    class Asdu;
-
     class Apdu
     {
     public:
-        static constexpr size_t GetHeaderSize() noexcept { return sizeof(mHeader); }
-        static constexpr size_t GetMaximumMsgSize() noexcept { return 0xFF; }
+        static constexpr size_t HEADER_SIZE = 6;
+        static const Apdu STARTDT_ACT;
+        static const Apdu STOPDT_ACT;
+        static const Apdu TESTFR_ACT;
+        static const Apdu STARTDT_CON;
+        static const Apdu STOPDT_CON;
+        static const Apdu TESTFR_CON;
         
-        // Get the size of the complete message including header
-        // Needs at least a fully received header @see GetHeaderSize()
-        static size_t GetMessageSize(const void* apHeader) noexcept
-        {
-            // IEC104 does not count the first 2 bytes into the message size -> needs to be added here
-            return reinterpret_cast<const Header*>(apHeader)->mSize + 2;
-        }
+        static bool IsFullyAvailable(const ByteStream& buf);
 
-        static constexpr int MAX_SEQUENCE = 0x7FFF;
-
-        static inline void IncrementSequence(int& arSequence) noexcept
-        {
-            if (arSequence >= MAX_SEQUENCE)
-                arSequence = 0;
-            else
-                ++arSequence;
-        }
-
-        static int SequenceDistance(int aLeft, int aRight) noexcept;
-
-        explicit Apdu() noexcept;
-        Apdu(const uint8_t* apData, size_t aSize) noexcept;
-        Apdu(const Apdu& arOther);
-        Apdu(Apdu&& arOther) noexcept;
+        // create from network stream
+        explicit Apdu(ByteStream& buf);
+        // create Recv Ack APDU (S-Frame)
+        explicit Apdu(Sequence recv);
 
         ~Apdu();
 
-        void ReadFrom(ByteStream& arSource);
+        size_t Length() const noexcept;
+        size_t PayloadLength() const noexcept;
+        size_t HeaderLength() const noexcept { return HEADER_SIZE; }
 
         bool IsValid() const noexcept;
 
-        bool HasReceiveCounter() const noexcept;
-        int GetReceiveCounter() const noexcept;
-        void SetReceiveCounter(int aValue) noexcept;
+        bool HasPayload() const noexcept;
+        bool IsRecvAck() const noexcept;
 
-        bool HasSendCounter() const noexcept;
-        int GetSendCounter() const noexcept;
-        void SetSendCounter(int aValue) noexcept;
+        ServiceType ServiceActivation() const noexcept;
+        ServiceType ServiceConfirmation() const noexcept;
 
-        const void* GetData() const noexcept;
-
-        bool ReadAsdu(ByteStream& arInput) noexcept;
-
-        size_t GetAsduSize() const noexcept;
-        bool IsAsdu() const noexcept;
-        const Asdu& GetAsdu() const;
-
-        bool IsService() const noexcept;
-        bool IsServiceRequest() const noexcept;
-        bool IsServiceConfirmation() const noexcept;
-        Apdu CreateServiceConfirmation() const noexcept;
-
-        std::string GetTypeString() const;
-        std::string GetServiceString() const;
-
-    protected:
-
-        /**
-         * @brief MessageType with native encoding for IEC 60870-5-104
-         */
-        enum MessageType
-        {
-            INVALID = -1,
-
-            DATA            = 0x00, //!< Type I (Type mask 0x00)
-
-            RECEIVE_CONFIRM = 0x01, //!< Type S (Type mask 0x01)
-
-            /**
-             * Type U (Type mask 0x03)
-             * Bit   |  7     6  |  5     4  |  3     2  | 1     0 |
-             *       |  TESTFR   |  STOPDT   |  STARTDT  | Type U  |
-             *       | con | act | con | act | con | act | 1  |  1 |
-             */
-            STARTDT_REQUEST = 0x07,
-            STARTDT_CONFIRM = 0x0B,
-            STOPDT_REQUEST  = 0x13,
-            STOPDT_CONFIRM  = 0x23,
-            TESTFR_REQUEST  = 0x43,
-            TESTFR_CONFIRM  = 0x83
-        };
-
-        void InitHeader(MessageType aType) noexcept;
+        std::optional<Sequence> ReceiveSequence() const noexcept;
+        std::optional<Sequence> SendSequence() const noexcept;
 
     private:
-        struct Header
-        {
-            uint8_t mStartByte;  //!< Startbyte 0x68
-            uint8_t mSize;       //!< Message size excluding mStartByte and mSize itself. At least sizeof(mControl).
-            uint8_t mControl[4]; //!< Encoding defined by IEC 60870-5-104
-        };
+        static constexpr uint8_t MAX_PAYLOAD_SIZE = 255;
 
-        /**
-         * @brief Read the sequence number from an APDU
-         * 
-         * The IEC104 sequence encoding stores 15 bit values
-         * The bit 0 of the lower byte is not used for sequencing, because it's needed for message identification
-         *             7  6  5  4  3  2  1  0
-         * apSource[0] X  X  X  X  X  X  X  0  <-- least significant bit @ 1
-         * apSource[1] X  X  X  X  X  X  X  X  <-- most  significant bit @ 7
+        static constexpr uint8_t STARTDT_ACT_BYTE = 0x07;
+        static constexpr uint8_t STARTDT_CON_BYTE = 0x0B;
+        static constexpr uint8_t STOPDT_ACT_BYTE  = 0x13;
+        static constexpr uint8_t STOPDT_CON_BYTE  = 0x23;
+        static constexpr uint8_t TESTFR_ACT_BYTE  = 0x43;
+        static constexpr uint8_t TESTFR_CON_BYTE  = 0x83;
 
-         * 
-         * @param[in] apSource Pointer to first byte of the evaluated sequence number
-         * @return Sequence number
-        */
-        int ReadSequenceInternal(const uint8_t* apSource) const noexcept;
+        // construct a service Apdu
+        explicit Apdu(uint8_t service) noexcept;
 
-        /**
-         * @brief Write the sequence number into an APDU
-         * 
-         * @param [in/out] apDestination Pointer to first byte of destination
-         * @param [in] aValue Value to set
-        */
-        void WriteSequenceInternal(uint8_t* apDestination, int aValue) noexcept;
-        MessageType VerifyMessage() const noexcept;
-
-        MessageType mType;
-        Header mHeader;
-        std::unique_ptr<Asdu> mpAsdu;
-    };
-
-    class AsduAcknowledgeApdu : public Apdu
-    {
-    public:
-        explicit AsduAcknowledgeApdu(int aReceiveCounter);
+        uint8_t mHeader[HEADER_SIZE] = { 0x68, 0x04, 0x00, 0x00, 0x00, 0x00 };
+        uint8_t mPayload[MAX_PAYLOAD_SIZE] = {};
     };
 }
 
