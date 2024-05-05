@@ -88,11 +88,13 @@ namespace IEC104
         }
         catch (...)
         {
-            RemoveLink(l);
+            if (!l.IsRunning())
+                RemoveLink(l);
             throw;
         }
 
-        RemoveLink(l);
+        if (!l.IsRunning())
+            RemoveLink(l);
     }
 
     void Server::RemoveLink(const Link& l)
