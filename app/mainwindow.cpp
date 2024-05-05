@@ -10,12 +10,15 @@
 #include "protocols/iec104/link.hpp"
 #include "protocols/iec104/server.hpp"
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , networkTick(this)
 {
     ui->setupUi(this);
+    async::this_thread::set_executor(ctx.get_executor());
+
     FillIpSelectBox();
 
     networkTick.callOnTimeout(this, &MainWindow::executeNetworkTasks);
@@ -76,8 +79,8 @@ boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address i
     server->SignalLinkStateChanged  .Register([this](IEC104::Link& l)                          { OnLinkStateChanged(l);     });
     server->SignalLinkTickFinished  .Register([this](IEC104::Link& l)                          { OnLinkTickFinished(l);     });
     server->SignalServerStateChanged.Register([this](IEC104::Server& s)                        { OnServerStartedStopped(s); });
-
     co_await server->Run();
+
     co_return;
 }
 
