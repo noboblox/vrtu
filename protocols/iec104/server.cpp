@@ -31,7 +31,7 @@ namespace IEC104
                 auto id = co_await async::race(promises);
 
                 if (id == 0) // Accept was first to be added and should always be on front
-                    promises.push_back(mLinks.back()->Run());
+                    promises.push_back(mLinks.back().Run());
                 else
                 {
                     // can't call std::vector::erase because promises are not assignable (bug in boost::cobalt)
@@ -55,11 +55,11 @@ namespace IEC104
     {
         auto peer = co_await listener.async_accept(async::use_op);
 
-        auto link = std::make_unique<Link>(std::move(peer), Link::Mode::Slave);
-        link->SignalApduReceived.Register([this](auto& l, auto& msg) { OnApduReceived(l, msg); });
-        link->SignalApduSent    .Register([this](auto& l, auto& msg) { OnApduSent(l, msg);     });
-        link->SignalTickFinished.Register([this](auto& l)            { OnLinkTickFinished(l);  });
-        link->SignalStateChanged.Register([this](auto& l)            { OnLinkStateChanged(l);  });
+        auto link = Link(std::move(peer), Link::Mode::Slave);
+        link.SignalApduReceived.Register([this](auto& l, auto& msg) { OnApduReceived(l, msg); });
+        link.SignalApduSent    .Register([this](auto& l, auto& msg) { OnApduSent(l, msg);     });
+        link.SignalTickFinished.Register([this](auto& l)            { OnLinkTickFinished(l);  });
+        link.SignalStateChanged.Register([this](auto& l)            { OnLinkStateChanged(l);  });
         
         mLinks.push_back(std::move(link));
         co_return;
@@ -97,8 +97,8 @@ namespace IEC104
 
     void Server::RemoveLink(const Link& l)
     {
-        auto it = std::find_if(mLinks.begin(), mLinks.end(), [&l](auto& ptr) {
-            return ptr.get() == &l; 
+        auto it = std::find_if(mLinks.begin(), mLinks.end(), [&l](auto& stored) {
+            return &stored == &l; 
         });
 
         if (it != mLinks.end())

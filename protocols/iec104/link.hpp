@@ -38,8 +38,13 @@ namespace IEC104
         // Create an connection with an connected socket
         explicit Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode, const ConnectionConfig& arConfig);
         explicit Link(boost::asio::ip::tcp::socket&& arSocket, Mode mode);
-
         ~Link() noexcept;
+
+        Link(const Link&)            = delete;
+        Link& operator=(const Link&) = delete;
+
+        Link(Link&&)                 = default;
+        Link& operator=(Link&&)      = default;
 
         // Start message processing 
         async::promise<void> Run();

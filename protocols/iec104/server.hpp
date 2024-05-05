@@ -20,15 +20,6 @@ namespace IEC104
     class Server
     {
     public:
-        explicit Server(const asio::ip::address& ip, uint16_t port = 2404);
-        ~Server();
-
-        async::promise<void> Run();
-        void Cancel();
-
-        asio::ip::address LocalIp() const noexcept { return mLocalAddr.address(); }
-        int LocalPort() const noexcept { return mLocalAddr.port(); }
-
         // Forwarded from child links
         CORE::SignalEveryone<void, Link&> SignalLinkStateChanged;
         // Forwarded from child links
@@ -39,6 +30,21 @@ namespace IEC104
         CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduReceived;
         // Signal is invoked when the server starts or stops 
         CORE::SignalEveryone<void, Server&> SignalServerStateChanged;
+
+        explicit Server(const asio::ip::address& ip, uint16_t port = 2404);
+        ~Server();
+
+        Server(const Server&)            = delete;
+        Server& operator=(const Server&) = delete;
+
+        Server(Server&&)                 = default;
+        Server& operator=(Server&&)      = default;
+
+        async::promise<void> Run();
+        void Cancel();
+
+        asio::ip::address LocalIp() const noexcept { return mLocalAddr.address(); }
+        int LocalPort() const noexcept { return mLocalAddr.port(); }
 
     private:
         void setRunning(bool value);
@@ -54,7 +60,7 @@ namespace IEC104
         bool mIsRunning = false;
         bool mNeedClose = false;
         asio::ip::tcp::endpoint mLocalAddr;
-        std::vector<std::unique_ptr<Link>> mLinks;
+        std::vector<Link> mLinks;
     };
 }
 #endif
