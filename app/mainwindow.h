@@ -3,9 +3,11 @@
 
 #include <QMainWindow>
 #include <QTimer>
+
+#undef emit // it is unfortunate, that qt defines emit as macro, which also is a function in boost's forward_cancellation.hpp...
 #include <boost/asio/io_context.hpp>
-//#include <boost/cobalt/task.hpp>
-//#include "protocols/iec104/server.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/cobalt/task.hpp>
 
 namespace IEC104
 {
@@ -32,7 +34,7 @@ public slots:
     void executeNetworkTasks();
 
 private:
-//    boost::cobalt::task<void> RunServer(const boost::asio::ip::address& ip, uint16_t port);
+    boost::cobalt::task<void> RunServer(const boost::asio::ip::address ip, uint16_t port);
 
 private:
     QTimer networkTick;

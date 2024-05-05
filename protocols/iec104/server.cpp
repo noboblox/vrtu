@@ -1,5 +1,8 @@
 #include "protocols/iec104/server.hpp"
+
 #include <list>
+#include <boost/cobalt/race.hpp>
+#include <boost/cobalt/op.hpp>
 
 namespace IEC104
 {
@@ -51,8 +54,55 @@ namespace IEC104
     async::promise<void> Server::AcceptOne(asio::ip::tcp::acceptor& listener)
     {
         auto peer = co_await listener.async_accept(async::use_op);
-        mLinks.emplace_back(std::make_unique<Link>(std::move(peer), Link::Mode::Slave));
+
+        auto link = std::make_unique<Link>(std::move(peer), Link::Mode::Slave);
+        link->SignalApduReceived.Register([this](auto& l, auto& msg) { OnApduReceived(l, msg); });
+        link->SignalApduSent    .Register([this](auto& l, auto& msg) { OnApduSent(l, msg);     });
+        link->SignalTickFinished.Register([this](auto& l)            { OnLinkTickFinished(l);  });
+        link->SignalStateChanged.Register([this](auto& l)            { OnLinkStateChanged(l);  });
+        
+        mLinks.push_back(std::move(link));
         co_return;
+    }
+
+    void Server::OnApduSent(Link& l, const Apdu& msg) const
+    {
+        SignalApduSent(l, msg);
+    }
+
+    void Server::OnApduReceived(Link& l, const Apdu& msg) const
+    {
+        SignalApduReceived(l, msg);
+    }
+
+    void Server::OnLinkTickFinished(Link& l) const
+    {
+        SignalLinkTickFinished(l);
+    }
+
+    void Server::OnLinkStateChanged(Link& l)
+    {
+        try
+        {
+            SignalLinkStateChanged(l);
+        }
+        catch (...)
+        {
+            RemoveLink(l);
+            throw;
+        }
+
+        RemoveLink(l);
+    }
+
+    void Server::RemoveLink(const Link& l)
+    {
+        auto it = std::find_if(mLinks.begin(), mLinks.end(), [&l](auto& ptr) {
+            return ptr.get() == &l; 
+        });
+
+        if (it != mLinks.end())
+            mLinks.erase(it);
     }
 
     void Server::setRunning(bool value)

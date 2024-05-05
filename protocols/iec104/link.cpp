@@ -4,6 +4,8 @@
 #include <iostream>
 
 #include <boost/asio/write.hpp>
+#include <boost/cobalt/join.hpp>
+#include <boost/cobalt/op.hpp>
 
 #include "core/bytestream.hpp"
 #include "protocols/iec104/asdu.hpp"
@@ -38,7 +40,6 @@ namespace IEC104
         catch (...) {}
 
         setRunning(false);
-        CloseSocket();
         co_return;
     }
 
@@ -47,7 +48,7 @@ namespace IEC104
         co_return;
     }
 
-    async::promise<void> Delay(std::chrono::milliseconds msec)
+    async::promise<void> Link::Delay(std::chrono::milliseconds msec)
     {
         asio::steady_timer t(co_await asio::this_coro::executor, msec);
         co_await t.async_wait(async::use_op);

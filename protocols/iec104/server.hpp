@@ -26,6 +26,9 @@ namespace IEC104
         async::promise<void> Run();
         void Cancel();
 
+        asio::ip::address LocalIp() const noexcept { return mLocalAddr.address(); }
+        int LocalPort() const noexcept { return mLocalAddr.port(); }
+
         // Forwarded from child links
         CORE::SignalEveryone<void, Link&> SignalLinkStateChanged;
         // Forwarded from child links
@@ -40,6 +43,12 @@ namespace IEC104
     private:
         void setRunning(bool value);
         async::promise<void> AcceptOne(asio::ip::tcp::acceptor& listener);
+        void RemoveLink(const Link& l);
+
+        void OnApduSent(Link& l, const Apdu& msg) const;
+        void OnApduReceived(Link& l, const Apdu& msg) const;
+        void OnLinkTickFinished(Link& l) const;
+        void OnLinkStateChanged(Link& l);
 
     private:
         bool mIsRunning = false;
