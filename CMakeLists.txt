@@ -44,7 +44,7 @@ add_library(iec104 STATIC
     protocols/iec104/infoaddress.cpp
     protocols/iec104/infoobjects.cpp
     protocols/iec104/server.cpp
-
+    protocols/iec104/sequence.cpp
     protocols/iec104/register_iec104.cpp
 
     # headers (for proper display inside all IDEs)

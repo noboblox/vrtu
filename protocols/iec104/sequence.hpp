@@ -1,7 +1,7 @@
 #ifndef IEC104_SEQUENCE_HPP_
 #define IEC104_SEQUENCE_HPP_
 
-#include <ostream>
+#include <iosfwd>
 #include "core/bytestream.hpp"
 
 namespace IEC104
@@ -128,9 +128,7 @@ namespace IEC104
 		int mValue;
 	};
 
-	std::ostream& operator<<(std::ostream& os, const Sequence& obj) {
-		return os << obj.Value();
-	}
+	std::ostream& operator<<(std::ostream& os, const Sequence& obj);
 }
 
 
