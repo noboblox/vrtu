@@ -87,6 +87,14 @@ namespace IEC104
         return mHeader[2] == 0x01;
     }
 
+    void Apdu::WriteTo(std::vector<uint8_t>& dest) const
+    {
+        dest.insert(dest.end(), mHeader, mHeader + HEADER_SIZE);
+
+        if (HasPayload())
+            dest.insert(dest.end(), mPayload, mPayload + PayloadLength());
+    }
+
     ServiceType Apdu::ServiceActivation() const noexcept
     {
         int service = mHeader[2];

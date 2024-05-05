@@ -34,6 +34,8 @@ namespace IEC104
         size_t PayloadLength() const noexcept;
         size_t HeaderLength() const noexcept { return HEADER_SIZE; }
 
+        void WriteTo(std::vector<uint8_t>& dest) const;
+
         bool IsValid() const noexcept;
 
         bool HasPayload() const noexcept;

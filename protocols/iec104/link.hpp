@@ -67,6 +67,7 @@ namespace IEC104
         bool IsRunning() const noexcept { return mIsRunning; }
         bool IsActive() const noexcept { return mIsActive; }
         bool IsMaster() const noexcept { return mIsMaster; }
+        bool ServicePending() const noexcept;
         
         asio::ip::address LocalIp() const noexcept { return mSocket.local_endpoint().address(); }
         int LocalPort() const noexcept { return mSocket.local_endpoint().port(); }
@@ -84,7 +85,23 @@ namespace IEC104
 
     private:
         async::promise<void> Delay(std::chrono::milliseconds msec);
-        async::promise<void> ActivateService(Apdu service);
+        async::promise<void> ActivateService(const Apdu& service);
+        async::promise<void> Send(const Apdu& adpu);
+        async::promise<void> SendAck();
+        async::promise<void> HandleReceive();
+        async::promise<void> HandleTimers();
+        async::promise<void> HandleApdu(const Apdu& apdu);
+        async::promise<void> HandleApduServiceAct(const Apdu& apdu);
+        async::promise<void> HandlePeerSendSequence(const Apdu& apdu);
+        void HandleApduServiceCon(const Apdu& apdu);
+        void HandlePeerRecvSequence(const Apdu& apdu);
+        
+        async::promise<void> ActivateLink();
+        async::promise<void> DeactivateLink(); 
+        void PeerActivated();
+        void PeerDeactivated();
+
+
         void setRunning(bool value);
         void setActive(bool value);
         void CloseSocket();
@@ -98,6 +115,7 @@ namespace IEC104
         bool mIsRunning = false;
         bool mIsActive = false;
         bool mNeedClose = false;
+        ServiceType mPending = ServiceType::NONE;
 
         std::chrono::milliseconds mPeerAckPendingSince;
         std::chrono::milliseconds mMyAckPendingSince;
@@ -110,6 +128,8 @@ namespace IEC104
 
         boost::asio::ip::tcp::socket mSocket;
         ConnectionConfig mConfig;
+        std::vector<uint8_t> sendBuffer;
+        ByteStream recvBuffer;
     };
 }
 

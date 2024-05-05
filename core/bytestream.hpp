@@ -8,61 +8,105 @@
 class ByteStream
 {
 public:
+    // initialize a bytestream with default capacity but no data
     explicit ByteStream() noexcept
-        : mIterator(0), mBuffer() {}
+        : mBuffer(1024), mBegin(0), mEnd(0) {}
 
+    // initialize a bytestream with capacity but no data
+    explicit ByteStream(size_t capacity) noexcept
+        : mBuffer(capacity), mBegin(0), mEnd(0) {}
+
+
+    // initialize the bytestream with available data
     explicit ByteStream(const uint8_t* apBegin, const uint8_t* apEnd)
-        : mIterator(0), mBuffer(apBegin, apEnd) {}
+        : mBuffer(apBegin, apEnd), mBegin(0), mEnd(mBuffer.size()) {}
 
+    // initialize the bytestream with available data
     explicit ByteStream(std::initializer_list<uint8_t> l) 
-        : mIterator(0), mBuffer(l)
+        : mBuffer(l), mBegin(0), mEnd(mBuffer.size())
     {
     }
 
-    /* Buffer status API (for error handling) */
 
     /// Overall size of the internal buffer
-    inline size_t BufferSize() const noexcept
+    inline size_t Capacity() const noexcept
     {
         return mBuffer.size();
     }
 
-    inline void Reserve(size_t aBytes)
+    inline void Reserve(size_t capacity)
     {
-        return mBuffer.reserve(aBytes);
+        if (capacity > mBuffer.size())
+            return mBuffer.resize(capacity);
     }
 
-    /// Begin iterator of the internal buffer
-    inline const uint8_t* Begin() const noexcept
+    inline uint8_t* WriteBegin() noexcept
     {
-        return mBuffer.empty() ? nullptr : mBuffer.data();
+        return mBuffer.data() + mEnd;
     }
 
-    /// End iterator of the internal buffer
-    inline const uint8_t* End() const noexcept
+    inline uint8_t* WriteEnd() noexcept
     {
-        return mBuffer.empty() ? nullptr : (mBuffer.data() + mBuffer.size());
+        return mBuffer.data() + mBuffer.size();
     }
 
-    /// Current iterator position inside the internal buffer
-    /// Do not use for data access! The iterator is not incremented
-    inline const uint8_t* Iterator() const noexcept
+    inline const uint8_t* WriteBegin() const noexcept
     {
-        return mBuffer.empty() ? nullptr : (mBuffer.data() + mIterator);
+        return mBuffer.data() + mEnd;
     }
 
-    /* Data access API */
-
-    /// Reset the stream iterator 
-    void ResetIterator() noexcept
+    inline const uint8_t* WriteEnd() const noexcept
     {
-        mIterator = 0;
+        return mBuffer.data() + mBuffer.size();
+    }
+
+
+    inline void BytesWritten(size_t count)
+    {
+        if (count > WritableBytes())
+            throw std::invalid_argument("cannot have written amount of bytes without out of bounds write");
+        mEnd += count;
+    }
+
+    inline const uint8_t* MemoryBegin() const noexcept
+    {
+        return mBuffer.data();
+    }
+
+    inline const uint8_t* MemoryEnd() const noexcept
+    {
+        return mBuffer.data() + mBuffer.size();
+    }
+
+    inline const uint8_t* DataBegin() const noexcept
+    {
+        return mBuffer.data() + mBegin;
+    }
+
+    inline const uint8_t* DataEnd() const noexcept
+    {
+        return mBuffer.data() + mEnd;
+    }
+
+    void Flush() noexcept
+    {
+        if (mBegin < mEnd)
+            std::memmove(mBuffer.data(), mBuffer.data() + mBegin, mEnd - mBegin);
+
+        mEnd -= mBegin;
+        mBegin = 0;
     }
 
     inline size_t RemainingBytes() const noexcept
     {
-        return mBuffer.size() - mIterator;
+        return mEnd - mBegin;
     }
+
+    inline size_t WritableBytes() const noexcept
+    {
+        return std::distance(WriteBegin(), WriteEnd());
+    }
+
 
     // Read a single byte from stream
     uint8_t ReadByte()
@@ -92,9 +136,9 @@ public:
         return *reinterpret_cast<const POD*>(ReadData(sizeof(POD)));
     }
     
-    void WriteByte(uint8_t arByte)
+    void WriteByte(uint8_t byte)
     {
-        mBuffer.push_back(arByte);
+        WriteData(&byte, 1);
     }
 
     const uint8_t* ReadData(size_t aBytes)
@@ -102,17 +146,18 @@ public:
         if (RemainingBytes() < aBytes)
             throw std::out_of_range("tried to read more data than available");
 
-        const uint8_t* p_result = Iterator();
-        mIterator += aBytes;
+        const uint8_t* p_result = DataBegin();
+        mBegin += aBytes;
         return p_result;
     }
 
     void WriteData(const uint8_t* apData, size_t aBytes)
     {
-        if (apData)
+        if (apData && aBytes > 0)
         {
-            mBuffer.reserve(mBuffer.size() + aBytes);
-            mBuffer.insert(mBuffer.end(), apData, apData + aBytes);
+            Reserve(mEnd + aBytes);
+            std::memcpy(WriteBegin(), apData, aBytes);
+            BytesWritten(aBytes);
         }
     }
 
@@ -120,12 +165,13 @@ public:
         if (RemainingBytes() <= index)
             throw std::out_of_range("no data at requested index");
 
-        return Iterator()[index];
+        return DataBegin()[index];
     }
 
 private:
-    size_t mIterator;
     std::vector<uint8_t> mBuffer;
+    size_t mBegin = 0;
+    size_t mEnd = 0;
 };
 
 #endif
