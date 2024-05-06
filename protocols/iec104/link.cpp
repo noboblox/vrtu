@@ -89,7 +89,7 @@ namespace IEC104
     {
         co_await Send(Apdu(seqRecv));
         seqMyLastAck = seqRecv;
-        mMyAckPendingSince = UtcNow();
+        mMyAckPendingSince = VRTU::ClockWrapper::UtcNow();
     }
 
     async::promise<void> Link::HandleReceive()
@@ -114,10 +114,10 @@ namespace IEC104
     async::promise<void> Link::HandleTimers()
     {
         if (!ServicePending() && seqPeerLastAck == seqSend)
-            mPeerAckPendingSince = UtcNow();
+            mPeerAckPendingSince = VRTU::ClockWrapper::UtcNow();
         
         if (seqMyLastAck == seqRecv)
-            mMyAckPendingSince = UtcNow();
+            mMyAckPendingSince = VRTU::ClockWrapper::UtcNow();
 
         if (TimerT1() > std::chrono::seconds(mConfig.GetT1()))
             throw std::runtime_error("peer ack timed out");
@@ -135,7 +135,7 @@ namespace IEC104
 
     async::promise<void> Link::HandleApdu(const Apdu& apdu)
     {
-        mNoTrafficSince = UtcNow();
+        mNoTrafficSince = VRTU::ClockWrapper::UtcNow();
         SignalApduReceived(*this, apdu);
 
         HandleApduServiceCon(apdu);
@@ -214,7 +214,7 @@ namespace IEC104
 
         if (acked > 0) {
             seqPeerLastAck = recv.value();
-            mPeerAckPendingSince = UtcNow();
+            mPeerAckPendingSince = VRTU::ClockWrapper::UtcNow();
         }
     }
 

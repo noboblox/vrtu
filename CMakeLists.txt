@@ -27,6 +27,8 @@ add_library(vrtucore STATIC
     core/namedenum.hpp
     core/signal.hpp
     core/util.hpp
+    core/clockwrapper.hpp
+    core/clockwrapper.cpp
 )
 
 target_include_directories(vrtucore PRIVATE

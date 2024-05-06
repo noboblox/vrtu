@@ -6,6 +6,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/cobalt/promise.hpp>
+#include "core/clockwrapper.hpp"
 #include "core/signal.hpp"
 
 #include "protocols/iec104/apdu.hpp"
@@ -74,9 +75,9 @@ namespace IEC104
         asio::ip::address RemoteIp() const noexcept { return mSocket.remote_endpoint().address(); }
         int RemotePort() const noexcept { return mSocket.remote_endpoint().port(); }
 
-        std::chrono::milliseconds TimerT1() const noexcept { return UtcNow() - mPeerAckPendingSince; }
-        std::chrono::milliseconds TimerT2() const noexcept { return UtcNow() - mMyAckPendingSince; }
-        std::chrono::milliseconds TimerT3() const noexcept { return UtcNow() - mNoTrafficSince; }
+        std::chrono::milliseconds TimerT1() const noexcept { return VRTU::ClockWrapper::UtcNow() - mPeerAckPendingSince; }
+        std::chrono::milliseconds TimerT2() const noexcept { return VRTU::ClockWrapper::UtcNow() - mMyAckPendingSince; }
+        std::chrono::milliseconds TimerT3() const noexcept { return VRTU::ClockWrapper::UtcNow() - mNoTrafficSince; }
 
         int CurrentW() const noexcept { return seqMyLastAck.Distance(seqRecv); }
         int CurrentK() const noexcept { return seqPeerLastAck.Distance(seqSend); }
@@ -106,10 +107,6 @@ namespace IEC104
         void setActive(bool value);
         void CloseSocket();
 
-        static inline std::chrono::milliseconds UtcNow() noexcept {
-            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-        }
-
     private:
         bool mIsMaster  = false;
         bool mIsRunning = false;
@@ -117,9 +114,9 @@ namespace IEC104
         bool mNeedClose = false;
         ServiceType mPending = ServiceType::NONE;
 
-        std::chrono::milliseconds mPeerAckPendingSince = UtcNow();
-        std::chrono::milliseconds mMyAckPendingSince   = UtcNow();
-        std::chrono::milliseconds mNoTrafficSince      = UtcNow();
+        std::chrono::milliseconds mPeerAckPendingSince = VRTU::ClockWrapper::UtcNow();
+        std::chrono::milliseconds mMyAckPendingSince   = VRTU::ClockWrapper::UtcNow();
+        std::chrono::milliseconds mNoTrafficSince      = VRTU::ClockWrapper::UtcNow();
 
         Sequence seqRecv;
         Sequence seqSend;
