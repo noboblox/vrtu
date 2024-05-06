@@ -126,6 +126,7 @@ add_executable(test_vrtu
                tests/test_encoding.cpp
                tests/test_sequence.cpp
                tests/test_bytestream.cpp
+               tests/test_link.cpp
 )
 
 

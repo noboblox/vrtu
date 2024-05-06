@@ -18,4 +18,9 @@ namespace VRTU
 		UtcNowFunc = func;
 	}
 
+	void ClockWrapper::Restore()
+	{
+		UtcNowFunc = &SystemClockUtcNow;
+	}
+
 }
