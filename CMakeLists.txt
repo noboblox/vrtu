@@ -27,7 +27,6 @@ add_library(vrtucore STATIC
     core/namedenum.hpp
     core/signal.hpp
     core/util.hpp
-    core/watchdog.hpp
 )
 
 target_include_directories(vrtucore PRIVATE
