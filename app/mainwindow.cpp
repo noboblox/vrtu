@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     networkTick.start(20);
 
     ui->editPort->setValidator(new QIntValidator(0, 65535, this));
+    ui->tableConnections->setColumnCount(4);
+    ui->tableConnections->hideColumn(0);
 }
 
 MainWindow::~MainWindow()
@@ -79,7 +81,7 @@ boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address i
     server.reset(new IEC104::Server(ip, port));
     server->SignalApduReceived      .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduReceived(l, msg);    });
     server->SignalApduSent          .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduSent(l, msg);        });
-    server->SignalLinkStateChanged  .Register([this](IEC104::Link& l)                          { OnLinkStateChanged(l);     });
+    server->SignalLinkStateChanged  .Register([this](IEC104::Link& l)                          { OnLinkStateChanged(l);});
     server->SignalLinkTickFinished  .Register([this](IEC104::Link& l)                          { OnLinkTickFinished(l);     });
     server->SignalServerStateChanged.Register([this](IEC104::Server& s)                        { OnServerStartedStopped(s); });
     co_await server->Run();
@@ -90,9 +92,31 @@ boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address i
 
 
 void MainWindow::OnLinkStateChanged(IEC104::Link& l)
-{
-    if (1)
-        return; // debug stub
+{  
+    auto table = ui->tableConnections;
+    auto items = table->findItems(QString::number(reinterpret_cast<intptr_t>(&l)), Qt::MatchFlag::MatchExactly);
+
+    auto row = 0;
+    if (items.empty()) {
+        row = table->rowCount();
+        table->insertRow(row);
+
+        table->setItem(row, 0, new QTableWidgetItem(QString::number(reinterpret_cast<intptr_t>(&l))));
+        table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(l.RemoteIp().to_string())));
+        table->setItem(row, 2, new QTableWidgetItem(QString::number(l.RemotePort())));
+    }
+    else if(!l.IsRunning()) {
+        table->removeRow(items.front()->row());
+        return;
+    }
+    else {
+        row = items.front()->row();
+    }
+
+    if (l.IsActive())
+        table->setItem(row, 3, new QTableWidgetItem("ACTIVE"));
+    else
+        table->setItem(row, 3, new QTableWidgetItem("PASSIVE"));
 }
 
 void MainWindow::OnLinkTickFinished(IEC104::Link& l)
