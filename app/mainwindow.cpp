@@ -65,6 +65,9 @@ void MainWindow::onStartClicked()
 
 void MainWindow::onStopClicked()
 {
+    server->Cancel();
+    server.reset(nullptr);
+
     ui->btStart->setEnabled(true);
     ui->btStop->setEnabled(false);
     ui->cbIpSelect->setEnabled(true);

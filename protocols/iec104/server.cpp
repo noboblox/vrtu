@@ -30,8 +30,14 @@ namespace IEC104
             {
                 auto id = co_await async::race(promises);
 
-                if (id == 0) // Accept was first to be added and should always be on front
+                if (id == 0) {
+                    // Accept is finished... so we queue a new one.
+                    promises.pop_front();
+                    promises.push_front(AcceptOne(listener)); 
+                    
+                    // And also the link runner
                     promises.push_back(mLinks.back().Run());
+                }
                 else
                 {
                     // can't call std::vector::erase because promises are not assignable (bug in boost::cobalt)

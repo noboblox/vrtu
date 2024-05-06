@@ -106,20 +106,20 @@ namespace IEC104
         void setActive(bool value);
         void CloseSocket();
 
-        inline std::chrono::milliseconds UtcNow() const noexcept {
+        static inline std::chrono::milliseconds UtcNow() noexcept {
             return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
         }
 
     private:
-        bool mIsMaster;
+        bool mIsMaster  = false;
         bool mIsRunning = false;
-        bool mIsActive = false;
+        bool mIsActive  = false;
         bool mNeedClose = false;
         ServiceType mPending = ServiceType::NONE;
 
-        std::chrono::milliseconds mPeerAckPendingSince;
-        std::chrono::milliseconds mMyAckPendingSince;
-        std::chrono::milliseconds mNoTrafficSince;
+        std::chrono::milliseconds mPeerAckPendingSince = UtcNow();
+        std::chrono::milliseconds mMyAckPendingSince   = UtcNow();
+        std::chrono::milliseconds mNoTrafficSince      = UtcNow();
 
         Sequence seqRecv;
         Sequence seqSend;

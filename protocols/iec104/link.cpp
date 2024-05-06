@@ -36,7 +36,7 @@ namespace IEC104
             {
                 auto promiseTick = Tick();
                 auto promiseDelay = Delay(std::chrono::milliseconds(30));
-                async::join(promiseTick, promiseDelay);
+                co_await async::join(promiseTick, promiseDelay);
             }
         }
         catch (...) {}
@@ -47,15 +47,8 @@ namespace IEC104
 
     async::promise<void> Link::Tick()
     {
-        static auto promiseTimers = std::make_unique<async::promise<void>>(HandleTimers());
-        static auto promiseReceive = std::make_unique<async::promise<void>>(HandleReceive());
-
-        if (promiseTimers->ready())
-            promiseTimers = std::make_unique<async::promise<void>>(HandleTimers());
-        if (promiseReceive->ready())
-            promiseReceive = std::make_unique<async::promise<void>>(HandleReceive());
-
-        co_await async::race(*promiseTimers, *promiseReceive);
+        co_await HandleReceive();
+        co_await HandleTimers();
 
         SignalTickFinished(*this);
         co_return;
@@ -87,6 +80,7 @@ namespace IEC104
     {
         apdu.WriteTo(sendBuffer);
         co_await mSocket.async_send(boost::asio::buffer(sendBuffer), async::use_op);
+        sendBuffer.clear();
         SignalApduSent(*this, apdu);
         co_return;
     }
@@ -100,6 +94,9 @@ namespace IEC104
 
     async::promise<void> Link::HandleReceive()
     {
+        if (!mSocket.available())
+            co_return;
+
         auto buf = boost::asio::buffer(recvBuffer.WriteBegin(), recvBuffer.WritableBytes());
         auto recv = co_await mSocket.async_read_some(buf, async::use_op);
         recvBuffer.BytesWritten(recv);
