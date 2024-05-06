@@ -13,3 +13,4 @@ vrtu.includes
 .cproject
 CMakeCache.txt
 CMakeFiles/**
+CMakeLists.txt.user
