@@ -33,7 +33,7 @@ namespace IEC104
     }
 
     Apdu::Apdu(Sequence recv)
-        : mHeader{ 0x68, 0x04, 0x01, recv.EncodedLowByte(), recv.EncodedHighByte() }
+        : mHeader{ 0x68, 0x04, 0x01, 0x00, recv.EncodedLowByte(), recv.EncodedHighByte() }
     {
     }
 
