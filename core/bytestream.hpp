@@ -60,9 +60,17 @@ public:
         return mBuffer.data() + mBuffer.size();
     }
 
+    inline void PrepareWrite(size_t requested) noexcept
+    {
+        return Reserve(mEnd + requested);
+    }
+
 
     inline void BytesWritten(size_t count)
     {
+        if (count == 0)
+            throw std::invalid_argument("write of zero bytes is likely to be undefined behavior");
+
         if (count > WritableBytes())
             throw std::invalid_argument("cannot have written amount of bytes without out of bounds write");
         mEnd += count;

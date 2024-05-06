@@ -65,6 +65,22 @@ BOOST_AUTO_TEST_CASE(contruct_bytestream)
 	BOOST_REQUIRE_EQUAL(data2.WriteBegin(), data2.WriteEnd());
 }
 
+BOOST_AUTO_TEST_CASE(write_bytestream)
+{
+	uint8_t arr1[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+	ByteStream data{ 0x01, 0x02, 0x03, 0x04 };
+
+	BOOST_REQUIRE_EQUAL(data.WritableBytes(), 0);
+	BOOST_REQUIRE_THROW(data.BytesWritten(0), std::invalid_argument);
+	BOOST_REQUIRE_THROW(data.BytesWritten(1), std::invalid_argument);
+	
+	data.PrepareWrite(5);
+	BOOST_REQUIRE_EQUAL(data.WritableBytes(), 5);
+	
+	std::memcpy(data.WriteBegin(), arr1, 5);
+	BOOST_REQUIRE_NO_THROW(data.BytesWritten(5));
+	BOOST_REQUIRE_THROW(data.BytesWritten(1), std::invalid_argument);
+}
 
 BOOST_AUTO_TEST_CASE(peek_bytestream)
 {
