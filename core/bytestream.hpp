@@ -10,23 +10,23 @@ class ByteStream
 public:
     // initialize a bytestream with default capacity but no data
     explicit ByteStream() noexcept
-        : mBuffer(1024), mBegin(0), mEnd(0) {}
+        : mBuffer(1024, 0), mBegin(0), mEnd(0) {}
 
     // initialize a bytestream with capacity but no data
     explicit ByteStream(size_t capacity) noexcept
-        : mBuffer(capacity), mBegin(0), mEnd(0) {}
+        : mBuffer(capacity, 0), mBegin(0), mEnd(0) {}
 
 
     // initialize the bytestream with available data
     explicit ByteStream(const uint8_t* apBegin, const uint8_t* apEnd)
-        : mBuffer(apBegin, apEnd), mBegin(0), mEnd(mBuffer.size()) {}
+        : mBuffer(apBegin, apEnd), mBegin(0), mEnd(mBuffer.size()) {
+    }
 
     // initialize the bytestream with available data
     explicit ByteStream(std::initializer_list<uint8_t> l) 
         : mBuffer(l), mBegin(0), mEnd(mBuffer.size())
     {
     }
-
 
     /// Overall size of the internal buffer
     inline size_t Capacity() const noexcept
@@ -151,7 +151,7 @@ public:
         return p_result;
     }
 
-    void WriteData(const uint8_t* apData, size_t aBytes)
+    void WriteData(const void* apData, size_t aBytes)
     {
         if (apData && aBytes > 0)
         {
