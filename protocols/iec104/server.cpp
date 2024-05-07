@@ -1,13 +1,14 @@
 #include "protocols/iec104/server.hpp"
 
 #include <list>
+#include <boost/cobalt/join.hpp>
 #include <boost/cobalt/race.hpp>
 #include <boost/cobalt/op.hpp>
-
 namespace IEC104
 {
     Server::Server(const asio::ip::address& ip, uint16_t port)
         : mLocalAddr{ip, port}
+        , mListener(async::this_thread::get_executor())
     {
     }
 
@@ -15,51 +16,28 @@ namespace IEC104
     {
     }
 
-    async::promise<void> Server::Run()
+    async::promise<void> Server::Tick()
     {
-        asio::ip::tcp::acceptor listener = asio::ip::tcp::acceptor({ co_await async::this_coro::executor }, mLocalAddr);
-
         try
         {
-            setRunning(true);
-            std::list<async::promise<void>> promises;
-
-            promises.push_back(AcceptOne(listener));
-
-            while (!mNeedClose)
-            {
-                auto id = co_await async::race(promises);
-
-                if (id == 0) {
-                    // Accept is finished... so we queue a new one.
-                    promises.pop_front();
-                    promises.push_front(AcceptOne(listener)); 
-                    
-                    // And also the link runner
-                    promises.push_back(mLinks.back().Run());
-                }
-                else
-                {
-                    // can't call std::vector::erase because promises are not assignable (bug in boost::cobalt)
-                    // see: https://github.com/boostorg/cobalt/issues/159
-                    // so let's use a list until this is resolved
-                    
-                    auto it = promises.begin();
-                    std::advance(it, id);
-                    promises.erase(it);
-                }
-            }
+            auto promiseAccept = AcceptOne();
+            auto promiseLinks = TickLinks();
+            co_await async::race(promiseAccept, promiseLinks);
         }
         catch (...) {}
-
-        listener.close();
-        setRunning(false);
         co_return;
     }
 
-    async::promise<void> Server::AcceptOne(asio::ip::tcp::acceptor& listener)
+    async::promise<void> Server::AcceptOne()
     {
-        auto peer = co_await listener.async_accept(async::use_op);
+        if (!mListener.is_open()) {
+            mListener.open(mLocalAddr.protocol());
+            mListener.set_option(asio::socket_base::reuse_address(true));
+            mListener.bind(mLocalAddr);
+            mListener.listen();
+        }
+
+        auto peer = co_await mListener.async_accept(async::use_op);
 
         auto link = Link(std::move(peer), Link::Mode::Slave);
         link.SignalApduReceived.Register([this](auto& l, auto& msg) { OnApduReceived(l, msg); });
@@ -68,6 +46,18 @@ namespace IEC104
         link.SignalStateChanged.Register([this](auto& l)            { OnLinkStateChanged(l);  });
         
         mLinks.push_back(std::move(link));
+        co_return;
+    }
+
+    async::task<void> Server::TickLinks()
+    {
+        std::vector <async::promise<void>> promises;
+
+        std::for_each(mLinks.begin(), mLinks.end(), [&promises] (Link& l) {
+                promises.push_back(l.Tick());
+            });
+
+        co_await async::join(promises);
         co_return;
     }
 
@@ -94,12 +84,12 @@ namespace IEC104
         }
         catch (...)
         {
-            if (!l.IsRunning())
+            if (!l.IsConnected())
                 RemoveLink(l);
             throw;
         }
 
-        if (!l.IsRunning())
+        if (!l.IsConnected())
             RemoveLink(l);
     }
 
@@ -111,16 +101,5 @@ namespace IEC104
 
         if (it != mLinks.end())
             mLinks.erase(it);
-    }
-
-    void Server::setRunning(bool value)
-    {
-        mIsRunning = value;
-        SignalServerStateChanged(*this);
-    }
-
-    void Server::Cancel()
-    {
-        mNeedClose = true;
     }
 }

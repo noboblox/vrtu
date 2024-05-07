@@ -3,6 +3,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/cobalt/promise.hpp>
+#include <boost/cobalt/task.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -28,8 +29,6 @@ namespace IEC104
         CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduSent;
         // Forwarded from child links
         CORE::SignalEveryone<void, Link&, const Apdu&> SignalApduReceived;
-        // Signal is invoked when the server starts or stops 
-        CORE::SignalEveryone<void, Server&> SignalServerStateChanged;
 
         explicit Server(const asio::ip::address& ip, uint16_t port = 2404);
         ~Server();
@@ -40,15 +39,14 @@ namespace IEC104
         Server(Server&&)                 = default;
         Server& operator=(Server&&)      = default;
 
-        async::promise<void> Run();
-        void Cancel();
+        async::promise<void> Tick();
 
         asio::ip::address LocalIp() const noexcept { return mLocalAddr.address(); }
         int LocalPort() const noexcept { return mLocalAddr.port(); }
 
     private:
-        void setRunning(bool value);
-        async::promise<void> AcceptOne(asio::ip::tcp::acceptor& listener);
+        async::promise<void> AcceptOne();
+        async::task<void> TickLinks();
         void RemoveLink(const Link& l);
 
         void OnApduSent(Link& l, const Apdu& msg) const;
@@ -57,8 +55,7 @@ namespace IEC104
         void OnLinkStateChanged(Link& l);
 
     private:
-        bool mIsRunning = false;
-        bool mNeedClose = false;
+        asio::ip::tcp::acceptor mListener;
         asio::ip::tcp::endpoint mLocalAddr;
         std::vector<Link> mLinks;
     };

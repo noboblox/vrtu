@@ -49,13 +49,8 @@ namespace IEC104
         Link(Link&&)                 = default;
         Link& operator=(Link&&)      = default;
 
-        // Start message processing 
-        async::promise<void> Run();
-
         // Single tick of message processing
         async::promise<void> Tick();
-        // Cancel message processing
-        void Cancel();
 
         async::promise<void> Start();
 
@@ -65,9 +60,9 @@ namespace IEC104
 
         const ConnectionConfig& Config() const noexcept { return mConfig; }
 
-        bool IsRunning() const noexcept { return mIsRunning; }
         bool IsActive() const noexcept { return mIsActive; }
         bool IsMaster() const noexcept { return mIsMaster; }
+        bool IsConnected() const noexcept { return mIsConnected; }
         bool ServicePending() const noexcept;
         
         asio::ip::address LocalIp() const noexcept { return mSocket.local_endpoint().address(); }
@@ -103,15 +98,16 @@ namespace IEC104
         void PeerDeactivated();
 
 
-        void setRunning(bool value);
+        void setConnected(bool value) noexcept;
         void setActive(bool value);
-        void CloseSocket();
+        void InvokeStateChanged() noexcept;
+
+        void CloseSocket() noexcept;
 
     private:
-        bool mIsMaster  = false;
-        bool mIsRunning = false;
-        bool mIsActive  = false;
-        bool mNeedClose = false;
+        bool mIsMaster    = false;
+        bool mIsActive    = false;
+        bool mIsConnected = true;
         ServiceType mPending = ServiceType::NONE;
 
         std::chrono::milliseconds mPeerAckPendingSince = VRTU::ClockWrapper::UtcNow();

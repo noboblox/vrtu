@@ -27,30 +27,20 @@ namespace IEC104
     {
     }
 
-    async::promise<void> Link::Run()
+    async::promise<void> Link::Tick()
     {
         try
         {
-            setRunning(true);
-            while (!mNeedClose)
-            {
-                auto promiseTick = Tick();
-                auto promiseDelay = Delay(std::chrono::milliseconds(30));
-                co_await async::join(promiseTick, promiseDelay);
-            }
+            co_await HandleReceive();
+            co_await HandleTimers();
+
+            SignalTickFinished(*this);
         }
-        catch (...) {}
+        catch (...)
+        {
+            CloseSocket();
+        }
 
-        setRunning(false);
-        co_return;
-    }
-
-    async::promise<void> Link::Tick()
-    {
-        co_await HandleReceive();
-        co_await HandleTimers();
-
-        SignalTickFinished(*this);
         co_return;
     }
 
@@ -246,11 +236,6 @@ namespace IEC104
             setActive(false);
     }
 
-    void Link::Cancel()
-    {
-        mNeedClose = true;
-    }
-
     async::promise<void> Link::Start()
     {
         co_await ActivateService(Apdu::STARTDT_ACT);
@@ -269,14 +254,23 @@ namespace IEC104
         co_return;
     }
 
-    void Link::setRunning(bool value)
+    void Link::setConnected(bool value) noexcept
     {
-        mIsRunning = value;
+        mIsConnected = value;
 
         if (value == false)
             setActive(value);
         else
+            InvokeStateChanged();
+    }
+
+    void Link::InvokeStateChanged() noexcept
+    {
+        try
+        {
             SignalStateChanged(*this);
+        }
+        catch (...) {}
     }
 
     void Link::setActive(bool value)
@@ -285,13 +279,14 @@ namespace IEC104
         SignalStateChanged(*this);
     }
 
-    void Link::CloseSocket()
+    void Link::CloseSocket() noexcept
     {
         if (!mSocket.is_open())
             return;
 
         boost::system::error_code ec;
         mSocket.close(ec);
+        setConnected(false);
     }
 
     Link::~Link() noexcept

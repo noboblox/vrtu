@@ -5,11 +5,11 @@
 #include <boost/asio/detached.hpp>
 #include <boost/cobalt/spawn.hpp>
 #include <boost/cobalt/task.hpp>
+#include <boost/cobalt/run.hpp>
 
 #include "protocols/iec104/apdu.hpp"
 #include "protocols/iec104/link.hpp"
 #include "protocols/iec104/server.hpp"
-
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     FillIpSelectBox();
 
     networkTick.callOnTimeout(this, &MainWindow::executeNetworkTasks);
-    networkTick.start(20);
+    networkTick.start(50);
 
     ui->editPort->setValidator(new QIntValidator(0, 65535, this));
     ui->tableConnections->setColumnCount(4);
@@ -57,17 +57,25 @@ void MainWindow::onStartClicked()
         return;
 
     auto port = ui->editPort->text().toInt();
-    async::spawn(ctx, RunServer(ip, port), boost::asio::detached);
+
+    server.reset(new IEC104::Server(ip, port));
 
     ui->btStart->setEnabled(false);
     ui->btStop->setEnabled(true);
     ui->cbIpSelect->setEnabled(false);
     ui->editPort->setEnabled(false);
+
+    server->SignalApduReceived.Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduReceived(l, msg);    });
+    server->SignalApduSent.Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduSent(l, msg);        });
+    server->SignalLinkStateChanged.Register([this](IEC104::Link& l) { OnLinkStateChanged(l);});
+    server->SignalLinkTickFinished.Register([this](IEC104::Link& l) { OnLinkTickFinished(l);     });
+
+    AddServer();
 }
 
 void MainWindow::onStopClicked()
 {
-    server->Cancel();
+    RemoveServer();
     server.reset(nullptr);
 
     ui->btStart->setEnabled(true);
@@ -75,21 +83,6 @@ void MainWindow::onStopClicked()
     ui->cbIpSelect->setEnabled(true);
     ui->editPort->setEnabled(true);
 }
-
-boost::cobalt::task<void> MainWindow::RunServer(const boost::asio::ip::address ip, uint16_t port)
-{
-    server.reset(new IEC104::Server(ip, port));
-    server->SignalApduReceived      .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduReceived(l, msg);    });
-    server->SignalApduSent          .Register([this](IEC104::Link& l, const IEC104::Apdu& msg) { OnApduSent(l, msg);        });
-    server->SignalLinkStateChanged  .Register([this](IEC104::Link& l)                          { OnLinkStateChanged(l);});
-    server->SignalLinkTickFinished  .Register([this](IEC104::Link& l)                          { OnLinkTickFinished(l);     });
-    server->SignalServerStateChanged.Register([this](IEC104::Server& s)                        { OnServerStartedStopped(s); });
-    co_await server->Run();
-
-    co_return;
-}
-
-
 
 void MainWindow::OnLinkStateChanged(IEC104::Link& l)
 {  
@@ -105,7 +98,7 @@ void MainWindow::OnLinkStateChanged(IEC104::Link& l)
         table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(l.RemoteIp().to_string())));
         table->setItem(row, 2, new QTableWidgetItem(QString::number(l.RemotePort())));
     }
-    else if(!l.IsRunning()) {
+    else if(!l.IsConnected()) {
         table->removeRow(items.front()->row());
         return;
     }
@@ -137,22 +130,48 @@ void MainWindow::OnApduSent(IEC104::Link& l, const IEC104::Apdu& msg)
         return; // debug stub
 }
 
-void MainWindow::OnServerStartedStopped(IEC104::Server& s)
+void MainWindow::AddServer()
 {
-    if (1)
-        return; // debug stub
+    if (server == nullptr)
+        return;
+
+    auto table = ui->tableConnections;
+    auto row = table->rowCount();
+    table->insertRow(row);
+
+    table->setItem(row, 0, new QTableWidgetItem(QString::number(reinterpret_cast<intptr_t>(server.get()))));
+    table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(server->LocalIp().to_string())));
+    table->setItem(row, 2, new QTableWidgetItem(QString::number(server->LocalPort())));
+    table->setItem(row, 3, new QTableWidgetItem(QString("RUNNING")));
+}
+
+void MainWindow::RemoveServer()
+{
+    auto table = ui->tableConnections;
+    auto items = table->findItems(QString::number(reinterpret_cast<intptr_t>(server.get())), Qt::MatchFlag::MatchExactly);
+
+    if (!items.isEmpty()) 
+        table->removeRow(items.first()->row());
+}
+
+boost::cobalt::task<void> MainWindow::ServerTick()
+{
+    if (server == nullptr)
+        co_return;
+
+    co_await server->Tick();
+    co_return;
 }
 
 void MainWindow::executeNetworkTasks()
 {
     try
     {
-        boost::system::error_code ec;
-        ctx.poll(ec);
-
-        // todo report the error
+        async::spawn(ctx, ServerTick(), asio::detached);
+        ctx.poll();
     }
-    catch (...) 
+    catch (std::exception e) 
     {
     }
+
 }
