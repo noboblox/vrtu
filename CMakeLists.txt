@@ -84,7 +84,7 @@ qt_add_translations(vrtu
     TS_FILES app/app_de_DE.ts)
 
 set_target_properties(vrtu PROPERTIES
-    WIN32_EXECUTABLE ON
+    #WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
 )
 

@@ -42,6 +42,8 @@ private:
     void OnLinkTickFinished(IEC104::Link& l);
     void OnApduReceived(IEC104::Link& l, const IEC104::Apdu& msg);
     void OnApduSent(IEC104::Link& l, const IEC104::Apdu& msg);
+    void AddApdu(IEC104::Link& l, const IEC104::Apdu& msg, bool sent);
+    QString ParseApdu(const IEC104::Apdu& msg);
 
     void AddServer();
     void RemoveServer();

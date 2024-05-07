@@ -10,6 +10,10 @@
 #include "protocols/iec104/apdu.hpp"
 #include "protocols/iec104/link.hpp"
 #include "protocols/iec104/server.hpp"
+#include <iostream>
+
+static void SetReadOnly(QTableWidget* table, int row);
+static QString IpString(asio::ip::address ip, uint16_t port);
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,11 +26,13 @@ MainWindow::MainWindow(QWidget *parent)
     FillIpSelectBox();
 
     networkTick.callOnTimeout(this, &MainWindow::executeNetworkTasks);
-    networkTick.start(50);
+    networkTick.start(250);
 
     ui->editPort->setValidator(new QIntValidator(0, 65535, this));
     ui->tableConnections->setColumnCount(4);
     ui->tableConnections->hideColumn(0);
+
+    ui->tableMainLog->setColumnCount(4);
 }
 
 MainWindow::~MainWindow()
@@ -110,6 +116,8 @@ void MainWindow::OnLinkStateChanged(IEC104::Link& l)
         table->setItem(row, 3, new QTableWidgetItem("ACTIVE"));
     else
         table->setItem(row, 3, new QTableWidgetItem("PASSIVE"));
+
+    SetReadOnly(table, row);
 }
 
 void MainWindow::OnLinkTickFinished(IEC104::Link& l)
@@ -120,14 +128,12 @@ void MainWindow::OnLinkTickFinished(IEC104::Link& l)
 
 void MainWindow::OnApduReceived(IEC104::Link& l, const IEC104::Apdu& msg)
 {
-    if (1)
-        return; // debug stub
+    AddApdu(l, msg, false);
 }
 
 void MainWindow::OnApduSent(IEC104::Link& l, const IEC104::Apdu& msg)
 {
-    if (1)
-        return; // debug stub
+    AddApdu(l, msg, true);
 }
 
 void MainWindow::AddServer()
@@ -143,6 +149,7 @@ void MainWindow::AddServer()
     table->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(server->LocalIp().to_string())));
     table->setItem(row, 2, new QTableWidgetItem(QString::number(server->LocalPort())));
     table->setItem(row, 3, new QTableWidgetItem(QString("RUNNING")));
+    SetReadOnly(table, row);
 }
 
 void MainWindow::RemoveServer()
@@ -152,6 +159,34 @@ void MainWindow::RemoveServer()
 
     if (!items.isEmpty()) 
         table->removeRow(items.first()->row());
+}
+
+static void SetReadOnly(QTableWidget* table, int row) {
+    for (int i = 0; i < table->columnCount(); ++i) {
+        table->item(row, i)->setFlags(table->item(row, i)->flags() & ~Qt::ItemIsEditable);
+    }
+}
+
+static QString IpString(asio::ip::address ip, uint16_t port) {
+    return QString("%1:%2").arg(QString::fromStdString(ip.to_string()), port);
+}
+
+void MainWindow::AddApdu(IEC104::Link& l, const IEC104::Apdu& msg, bool sent)
+{
+    auto view = ui->tableMainLog;
+    auto row = view->rowCount();
+    
+    view->insertRow(row);
+    view->setItem(row, 0, new QTableWidgetItem(IpString(l.LocalIp(), l.LocalPort())));
+    view->setItem(row, 1, new QTableWidgetItem(sent ? QString(">") : QString("<")));
+    view->setItem(row, 2, new QTableWidgetItem(IpString(l.RemoteIp(), l.RemotePort())));
+    view->setItem(row, 3, new QTableWidgetItem(ParseApdu(msg)));
+
+    SetReadOnly(view, row);
+}
+
+QString MainWindow::ParseApdu(const IEC104::Apdu& msg) {
+    return QString(" ");
 }
 
 boost::cobalt::task<void> MainWindow::ServerTick()
@@ -165,6 +200,8 @@ boost::cobalt::task<void> MainWindow::ServerTick()
 
 void MainWindow::executeNetworkTasks()
 {
+
+    auto start = std::chrono::high_resolution_clock::now();
     try
     {
         async::spawn(ctx, ServerTick(), asio::detached);
@@ -174,4 +211,6 @@ void MainWindow::executeNetworkTasks()
     {
     }
 
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() << std::endl;
 }
